@@ -4,7 +4,7 @@ from src.acc_evaluation import evaluate_model
 
 
 
-def train_local(model, train_loader, val_loader, number_of_epochs, lr):
+def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr = 0.1):
     criterion = nn.CrossEntropyLoss()
     optimiser = optim.SGD(model.parameters(), lr = lr)
     model.train()
@@ -20,8 +20,11 @@ def train_local(model, train_loader, val_loader, number_of_epochs, lr):
             optimiser.step() 
             running_loss += loss.item()
         avg_loss = running_loss / len(train_loader)
-        val_accuracy = evaluate_model(val_loader, model)
-        print(f"Epoch {epoch+1}/{number_of_epochs}, Average Loss: {avg_loss:.4f}\n")
+        if val_loader is not None:
+            val_accuracy = evaluate_model(val_loader, model)
+            print(f"Epoch {epoch+1}/{number_of_epochs}, Loss: {avg_loss:.4f}, Val Acc: {val_accuracy:.4f}")
+        else:
+            print(f"Epoch {epoch+1}/{number_of_epochs}, Loss: {avg_loss:.4f}")
     return model.state_dict() # return a dictionary of model parameters
 
 # client_model = CNN()
