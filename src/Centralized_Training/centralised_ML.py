@@ -15,9 +15,7 @@ import os
 sys.path.append(os.path.abspath("../.."))
 
 importlib.reload(src.client_training)
-from src.client_training import train_local
-importlib.reload(src.acc_evaluation)
-from src.acc_evaluation import evaluate_model
+from src.client_training import train_local, evaluate_model
 from src.CNN_implementation import CNN
 # %%
 # We will need to convert image to tensors
