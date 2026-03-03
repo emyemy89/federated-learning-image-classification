@@ -47,39 +47,4 @@ train_model(train_loader, model, device)
 test_loader = DataLoader(mnist_testset, batch_size = 64, shuffle = False)# loading
 
 model_testing(test_loader, model, device)
-# %%
-"""
-# Train centralised model
 
-# Load the data
-# Instead of 1 image at a time, we work in batches
-train_loader = DataLoader(mnist_trainset, batch_size = 64, shuffle = True)
-
-#for images, labels in train_loader:
-#    print(images.shape)    # torch.Size([64, 1, 28, 28])
-#    print(labels.shape)    # torch.Size([64])
-#    break
-
-# Loss function and optimiser
-# We will use CrossEntropy for loss and Adam for optimisation 
-criterion = nn.CrossEntropyLoss()
-optimiser = optim.Adam(model.parameters(), lr = 0.001) # here the learning rate is 0.001
-
-# train one batch
-images, labels = next(iter(train_loader))
-outputs = model(images)
-loss = criterion(outputs, labels) # compute the loss
-print('Loss before backward propagation: ',loss.item())
-
-# Backward propagation
-optimiser.zero_grad() # clear previous gradients
-loss.backward() # compute gradients
-# update the weights
-optimiser.step()
-# check loss again
-outputs_new = model(images)
-loss_new = criterion(outputs_new, labels)
-print('Loss after one backward propagation step: ',loss_new.item())
-"""
-
-# %%
