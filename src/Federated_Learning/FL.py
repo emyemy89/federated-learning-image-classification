@@ -14,6 +14,9 @@ sys.path.append(os.path.abspath("../.."))
 
 from src.client_training import train_local,  evaluate_model, aggregate
 from src.CNN_implementation import CNN
+
+from src.plotting import plot_loss, plot_acc
+
 print(sys.executable)
 # %%
 # Data Loading
@@ -57,25 +60,43 @@ test_loader = DataLoader(mnist_testset, batch_size=64, shuffle=False)
 # %%
 # Now we need to aggregate the results with FedAvg
 number_of_rounds = 3
+epochs = 3
+
+global_losses = []        # avg client loss per round
+global_val_accuracies = [] # global model val accuracy per round
+
+
 for round in range(number_of_rounds):
     print("---------------------------------")
     print(f"Round {round+1}:\n")
     
     client_state_dictionary = []
     number_of_samples = []
+    round_losses = []
     # loop over all clients
     for client in range(number_of_clients):
         print(f"Client{client+1}:")
         local_model = copy.deepcopy(global_model) # copy global model locally
-        weights = train_local(model = local_model, train_loader = client_training_loaders[client], number_of_epochs = 1, lr = 0.1) # train it
+        weights, losses, _ = train_local(model = local_model, train_loader = client_training_loaders[client], number_of_epochs = epochs, lr = 0.1) # train it
         client_state_dictionary.append(weights) # store the weights
         number_of_samples.append(len(client_training_loaders[client].dataset)) # store number of samples
-        
+        round_losses.append(losses[-1])
     # aggregate
+    round_loss = sum(round_losses) / len(round_losses)
+    global_losses.append(round_loss) #average the loss for the whole round
+    
     global_model = aggregate(number_of_samples, client_state_dictionary, global_model)
-    print("Validation:")
-    evaluate_model(val_loader, global_model)
+
+    print("Average Loss: " + str(round_loss) )
+    print("Validation Accuracy:")
+    round_val_accuracy = evaluate_model(val_loader, global_model, True)
+    global_val_accuracies.append(round_val_accuracy)
+
 # compute accuracy
-evaluate_model(test_loader, global_model)
+print("Final Model Accuracy: ")
+evaluate_model(test_loader, global_model, True)
+
+plot_loss(global_losses)
+plot_acc( global_val_accuracies)
 
 
