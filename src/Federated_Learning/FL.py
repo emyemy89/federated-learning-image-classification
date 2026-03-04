@@ -14,6 +14,7 @@ sys.path.append(os.path.abspath("../.."))
 
 from src.client_training import train_local,  evaluate_model, aggregate
 from src.CNN_implementation import CNN
+
 print(sys.executable)
 # %%
 # Data Loading
