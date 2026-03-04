@@ -60,6 +60,7 @@ test_loader = DataLoader(mnist_testset, batch_size=64, shuffle=False)
 # %%
 # Now we need to aggregate the results with FedAvg
 number_of_rounds = 3
+epochs = 3
 
 global_losses = []        # avg client loss per round
 global_val_accuracies = [] # global model val accuracy per round
@@ -76,7 +77,7 @@ for round in range(number_of_rounds):
     for client in range(number_of_clients):
         print(f"Client{client+1}:")
         local_model = copy.deepcopy(global_model) # copy global model locally
-        weights, losses, _ = train_local(model = local_model, train_loader = client_training_loaders[client], number_of_epochs = 1, lr = 0.1) # train it
+        weights, losses, _ = train_local(model = local_model, train_loader = client_training_loaders[client], number_of_epochs = epochs, lr = 0.1) # train it
         client_state_dictionary.append(weights) # store the weights
         number_of_samples.append(len(client_training_loaders[client].dataset)) # store number of samples
         round_losses.append(losses[-1])
