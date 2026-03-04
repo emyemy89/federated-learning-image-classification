@@ -64,8 +64,8 @@ test_accuracy = evaluate_model(test_loader, model, True)
 print(f"Test Accuracy: {test_accuracy:.2f}%")
 
 
-plot_loss(number_of_epochs, losses)
-plot_acc(number_of_epochs, val_accuracies)
+plot_loss( losses)
+plot_acc( val_accuracies)
 
 
 

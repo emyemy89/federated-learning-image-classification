@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
-def plot_loss(number_of_epochs, losses):
-    epochs = range(1, number_of_epochs + 1)
+def plot_loss( losses):
+    epochs = range(1, len(losses) + 1)
 
 #loss plot
     plt.figure()
@@ -16,8 +16,8 @@ def plot_loss(number_of_epochs, losses):
     
 
 
-def plot_acc(number_of_epochs, val_accuracies):
-    epochs = range(1, number_of_epochs + 1)
+def plot_acc( val_accuracies):
+    epochs = range(1, len(val_accuracies) + 1)
     #acc plot
     plt.figure()
     plt.plot(epochs, val_accuracies, marker='o', color='orange')
