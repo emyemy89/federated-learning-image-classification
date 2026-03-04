@@ -6,6 +6,8 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 
+import matplotlib.pyplot as plt
+
 import sys
 import os
 sys.path.append(os.path.abspath("../.."))
@@ -43,16 +45,42 @@ print(out.shape)
 
 # %%
 #Train
-number_of_epochs = 3
+number_of_epochs = 10
 
 train_loader = DataLoader(mnist_trainset, batch_size = 64, shuffle = True)
 val_loader = DataLoader(mnist_valset, batch_size = 64, shuffle = False)
 
 # do training
-train_local( model, train_loader, val_loader, number_of_epochs, 0.01)
+_, losses, val_accuracies = train_local( model, train_loader, val_loader, number_of_epochs, 0.01)
 
 # Test the accuracy on test data
 test_loader = DataLoader(mnist_testset, batch_size = 64, shuffle = False)# loading
 
 test_accuracy = evaluate_model(test_loader, model)
 print(f"Test Accuracy: {test_accuracy:.2f}%")
+
+epochs = range(1, number_of_epochs + 1)
+
+#loss plot
+plt.figure()
+plt.plot(epochs, losses, marker='o')
+plt.title('Training Loss per Epoch')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.xticks(epochs)
+plt.tight_layout()
+plt.savefig('loss.png')
+plt.show()
+
+#acc plot
+plt.figure()
+plt.plot(epochs, val_accuracies, marker='o', color='orange')
+plt.title('Validation Accuracy per Epoch')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy (%)')
+plt.xticks(epochs)
+plt.tight_layout()
+plt.savefig('accuracy.png')
+plt.show()
+
+

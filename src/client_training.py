@@ -8,6 +8,7 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
     criterion = nn.CrossEntropyLoss()
     optimiser = optim.SGD(model.parameters(), lr = lr)
     model.train()
+    losses, val_accuracies = [], []
     for epoch in range (number_of_epochs):
         running_loss = 0.0
         for images, labels in train_loader:
@@ -20,12 +21,14 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
             optimiser.step() 
             running_loss += loss.item()
         avg_loss = running_loss / len(train_loader)
+        losses.append(avg_loss) 
         if val_loader is not None:
             val_accuracy = evaluate_model(val_loader, model)
+            val_accuracies.append(val_accuracy)
             print(f"Epoch {epoch+1}/{number_of_epochs}, Loss: {avg_loss:.4f}, Val Acc: {val_accuracy:.4f}")
         else:
             print(f"Epoch {epoch+1}/{number_of_epochs}, Loss: {avg_loss:.4f}")
-    return model.state_dict() # return a dictionary of model parameters
+    return model.state_dict(), losses, val_accuracies # return a dictionary of model parameters
 
 # client_model = CNN()
 # weights = train_local(client_model, client_loaders[0], epochs = 1, lr = 0.1)
