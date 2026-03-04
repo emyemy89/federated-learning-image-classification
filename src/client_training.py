@@ -23,7 +23,7 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
         avg_loss = running_loss / len(train_loader)
         losses.append(avg_loss) 
         if val_loader is not None:
-            val_accuracy = evaluate_model(val_loader, model)
+            val_accuracy = evaluate_model(val_loader, model, False)
             val_accuracies.append(val_accuracy)
             print(f"Epoch {epoch+1}/{number_of_epochs}, Loss: {avg_loss:.4f}, Val Acc: {val_accuracy:.4f}")
         else:
@@ -34,7 +34,7 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
 # weights = train_local(client_model, client_loaders[0], epochs = 1, lr = 0.1)
 # print(weights.keys())
 
-def evaluate_model(dataloader, global_model):
+def evaluate_model(dataloader, global_model, is_final):
     # test_loader = DataLoader(mnist_testset, batch_size=64, shuffle=False)
     global_model.eval()
     correct = 0
@@ -47,7 +47,10 @@ def evaluate_model(dataloader, global_model):
             total += labels.size(0) # add batch size to keep track of processed batches
             correct += (predicted == labels).sum().item()
     accuracy = (correct / total)*100
-    print(f'Accuracy {accuracy}%\n')
+    if(is_final):
+        print(f'Accuracy {accuracy}%\n')
+    
+    
     return accuracy
 
 def aggregate(number_of_samples, client_state_dictionary, global_model):

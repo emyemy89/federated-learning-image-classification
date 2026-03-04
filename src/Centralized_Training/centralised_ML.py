@@ -6,7 +6,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 
-import matplotlib.pyplot as plt
+
 
 import sys
 import os
@@ -14,6 +14,10 @@ sys.path.append(os.path.abspath("../.."))
 
 from src.client_training import train_local, evaluate_model
 from src.CNN_implementation import CNN
+
+from src.plotting import plot_loss, plot_acc
+
+
 # %%
 # We will need to convert image to tensors
 # here we define a transform
@@ -45,7 +49,7 @@ print(out.shape)
 
 # %%
 #Train
-number_of_epochs = 10
+number_of_epochs = 3
 
 train_loader = DataLoader(mnist_trainset, batch_size = 64, shuffle = True)
 val_loader = DataLoader(mnist_valset, batch_size = 64, shuffle = False)
@@ -56,31 +60,12 @@ _, losses, val_accuracies = train_local( model, train_loader, val_loader, number
 # Test the accuracy on test data
 test_loader = DataLoader(mnist_testset, batch_size = 64, shuffle = False)# loading
 
-test_accuracy = evaluate_model(test_loader, model)
+test_accuracy = evaluate_model(test_loader, model, True)
 print(f"Test Accuracy: {test_accuracy:.2f}%")
 
-epochs = range(1, number_of_epochs + 1)
 
-#loss plot
-plt.figure()
-plt.plot(epochs, losses, marker='o')
-plt.title('Training Loss per Epoch')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.xticks(epochs)
-plt.tight_layout()
-plt.savefig('loss.png')
-plt.show()
+plot_loss(number_of_epochs, losses)
+plot_acc(number_of_epochs, val_accuracies)
 
-#acc plot
-plt.figure()
-plt.plot(epochs, val_accuracies, marker='o', color='orange')
-plt.title('Validation Accuracy per Epoch')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy (%)')
-plt.xticks(epochs)
-plt.tight_layout()
-plt.savefig('accuracy.png')
-plt.show()
 
 
