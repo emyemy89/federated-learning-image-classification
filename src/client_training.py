@@ -1,7 +1,10 @@
 import torch
+import copy
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import random_split, DataLoader
 
+from plotting import plot_loss, plot_acc
 
 
 def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr = 0.1):
@@ -66,3 +69,66 @@ def aggregate(number_of_samples, client_state_dictionary, global_model):
     # set global model parameters for the next step
     global_model.load_state_dict(global_state_dictionary)
     return global_model
+
+
+# Data Loaders
+# Client abstraction, split training dataset into clients
+def create_client_loaders(number_of_clients, mnist_trainset):
+    trainset_size = len(mnist_trainset)
+    client_trainset_size = trainset_size // number_of_clients  # we use // instead of / to remove the fractional part
+    client_trainsets = random_split(mnist_trainset,
+                                    [client_trainset_size] * number_of_clients)  # a list with: client_datasets[0], client_datasets[1], ...[5]
+
+    client_training_loaders = []
+    for dataset in client_trainsets:
+        train_loader = DataLoader(dataset, batch_size=64, shuffle=True)
+        client_training_loaders.append(train_loader)
+    return client_training_loaders
+
+
+def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, model):
+    # do training
+    _, losses, val_accuracies = train_local( model, train_loader, val_loader, number_of_epochs, 0.01)
+    test_accuracy = evaluate_model(test_loader, model, True)
+    print(f"Test Accuracy: {test_accuracy:.2f}%")
+    plot_loss( losses)
+    plot_acc( val_accuracies)
+
+
+def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_training_loaders, val_loader, test_loader):
+    global_losses = []  # avg client loss per round
+    global_val_accuracies = []  # global model val accuracy per round
+
+    for round in range(number_of_rounds):
+        print("---------------------------------")
+        print(f"Round {round + 1}:\n")
+
+        client_state_dictionary = []
+        number_of_samples = []
+        round_losses = []
+        # loop over all clients
+        for client in range(number_of_clients):
+            print(f"Client{client + 1}:")
+            local_model = copy.deepcopy(global_model)  # copy global model locally
+            weights, losses, _ = train_local(model=local_model, train_loader=client_training_loaders[client],
+                                             number_of_epochs=epochs, lr=0.1)  # train it
+            client_state_dictionary.append(weights)  # store the weights
+            number_of_samples.append(len(client_training_loaders[client].dataset))  # store number of samples
+            round_losses.append(losses[-1])
+        # aggregate
+        round_loss = sum(round_losses) / len(round_losses)
+        global_losses.append(round_loss)  # average the loss for the whole round
+
+        global_model = aggregate(number_of_samples, client_state_dictionary, global_model)
+
+        print("Average Loss: " + str(round_loss))
+        print("Validation Accuracy:")
+        round_val_accuracy = evaluate_model(val_loader, global_model, True)
+        global_val_accuracies.append(round_val_accuracy)
+
+    # compute accuracy
+    print("Final Model Accuracy: ")
+    evaluate_model(test_loader, global_model, True)
+
+    plot_loss(global_losses)
+    plot_acc(global_val_accuracies)
