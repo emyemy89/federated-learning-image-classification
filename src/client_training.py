@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+from plotting import plot_loss, plot_acc
 
 
 def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr = 0.1):
@@ -66,3 +67,11 @@ def aggregate(number_of_samples, client_state_dictionary, global_model):
     # set global model parameters for the next step
     global_model.load_state_dict(global_state_dictionary)
     return global_model
+
+def centralised_ML(number_of_epochs, train_loader, val_loader, test_loader, model):
+    # do training
+    _, losses, val_accuracies = train_local( model, train_loader, val_loader, number_of_epochs, 0.01)
+    test_accuracy = evaluate_model(test_loader, model, True)
+    print(f"Test Accuracy: {test_accuracy:.2f}%")
+    plot_loss( losses)
+    plot_acc( val_accuracies)
