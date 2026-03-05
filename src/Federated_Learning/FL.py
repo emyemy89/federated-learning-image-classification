@@ -37,18 +37,17 @@ image, label = mnist_trainset[0]
 # a CNN with 2 layers: Layer1-> Relu->Pool->Layer2->...->Flatten->Fully connected->Output
 
 global_model = CNN()
-out = global_model(image.unsqueeze(0))
-print(out.shape)
+NUMBER_OF_CLIENTS = 5
 # %%
 # Data Loaders
-client_training_loaders = create_client_loaders(number_of_clients = 5, mnist_trainset = mnist_trainset)
+client_training_loaders = create_client_loaders(number_of_clients = NUMBER_OF_CLIENTS, mnist_trainset = mnist_trainset)
 val_loader = DataLoader(mnist_valset, batch_size = 64, shuffle = False)
 test_loader = DataLoader(mnist_testset, batch_size=64, shuffle=False)
 
 # %%
 # Now we need to aggregate the results with FedAvg
 run_fl(number_of_rounds = 3,
-       number_of_clients = 5,
+       number_of_clients = NUMBER_OF_CLIENTS,
        epochs = 3,
        global_model = global_model,
        client_training_loaders = client_training_loaders,
