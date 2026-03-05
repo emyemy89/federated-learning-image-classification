@@ -9,6 +9,9 @@ from torch.utils.data import random_split
 
 import sys
 import os
+
+from client_training import run_centralised_ml
+
 sys.path.append(os.path.abspath("../.."))
 
 from src.client_training import train_local, evaluate_model, centralised_ML
@@ -37,4 +40,4 @@ val_loader = DataLoader(mnist_valset, batch_size = 64, shuffle = False)
 test_loader = DataLoader(mnist_testset, batch_size=64, shuffle=False)
 
 # function that does it all
-centralised_ML(number_of_epochs = 3, train_loader = train_loader, val_loader = val_loader, test_loader = test_loader, model = model)
+run_centralised_ml(number_of_epochs = 3, train_loader = train_loader, val_loader = val_loader, test_loader = test_loader, model = model)
