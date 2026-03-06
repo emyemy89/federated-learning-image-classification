@@ -1,24 +1,14 @@
 # %%
-import torch
+import sys
+import os
+sys.path.append(os.path.abspath("../.."))
+
 from torchvision import datasets, transforms
-import torch.nn as nn
-import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 
-
-import sys
-import os
-
 from client_training import run_centralised_ml
-
-sys.path.append(os.path.abspath("../.."))
-
-from src.client_training import train_local, evaluate_model, centralised_ML
 from src.CNN_implementation import CNN
-
-from src.plotting import plot_loss, plot_acc
-
 
 # %%
 # load the dataset
