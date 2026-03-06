@@ -6,17 +6,16 @@ import torch.optim as optim
 import copy
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split # use for data distribution for clients
-
+from collections import Counter
 
 import sys
 import os
 
-from client_training import run_fl
-
+from client_training import run_fl, train_local, evaluate_model, aggregate, create_IID_client_loaders, create_non_IID_client_loaders
+from src.CNN_implementation import CNN
 sys.path.append(os.path.abspath("../.."))
 
-from src.client_training import train_local, evaluate_model, aggregate, create_client_loaders
-from src.CNN_implementation import CNN
+
 
 from src.plotting import plot_loss, plot_acc
 
@@ -40,7 +39,9 @@ global_model = CNN()
 NUMBER_OF_CLIENTS = 5
 # %%
 # Data Loaders
-client_training_loaders = create_client_loaders(number_of_clients = NUMBER_OF_CLIENTS, mnist_trainset = mnist_trainset)
+client_training_loaders = create_non_IID_client_loaders(number_of_clients = NUMBER_OF_CLIENTS, mnist_trainset = mnist_trainset)
+
+
 val_loader = DataLoader(mnist_valset, batch_size = 64, shuffle = False)
 test_loader = DataLoader(mnist_testset, batch_size=64, shuffle=False)
 

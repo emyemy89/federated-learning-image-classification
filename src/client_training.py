@@ -2,7 +2,7 @@ import torch
 import copy
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import random_split, DataLoader
+from torch.utils.data import random_split, DataLoader, Subset
 
 from plotting import plot_loss, plot_acc
 
@@ -73,7 +73,7 @@ def aggregate(number_of_samples, client_state_dictionary, global_model):
 
 # Data Loaders
 # Client abstraction, split training dataset into clients
-def create_client_loaders(number_of_clients, mnist_trainset):
+def create_IID_client_loaders(number_of_clients, mnist_trainset):
     trainset_size = len(mnist_trainset)
     client_trainset_size = trainset_size // number_of_clients  # we use // instead of / to remove the fractional part
     client_trainsets = random_split(mnist_trainset,
@@ -83,6 +83,26 @@ def create_client_loaders(number_of_clients, mnist_trainset):
     for dataset in client_trainsets:
         train_loader = DataLoader(dataset, batch_size=64, shuffle=True)
         client_training_loaders.append(train_loader)
+    return client_training_loaders
+
+def create_non_IID_client_loaders(number_of_clients, mnist_trainset):
+    labels = mnist_trainset.dataset.targets if hasattr(mnist_trainset, "dataset") else mnist_trainset.targets # [5,0,1,2,1,4,5....]
+    # group indices by digits
+    label_indices = {i: [] for i in range(10)}
+    for idx, label in enumerate(labels):
+        label_indices[int(label)].append(idx) # sth like 'indices of images that are 0: [1,6,11,...]'
+    # assign digits to clients
+    digits_per_client = 10 // number_of_clients
+    client_training_loaders = []
+    for client in range(number_of_clients):
+        client_indices = []
+        start_digit = client * digits_per_client
+        end_digit = start_digit +  digits_per_client
+        for digit in range(start_digit, end_digit):
+            client_indices.extend(label_indices[digit])
+        client_dataset = Subset(mnist_trainset, client_indices)
+        loader = DataLoader(client_dataset, batch_size=64, shuffle=True)
+        client_training_loaders.append(loader)
     return client_training_loaders
 
 
