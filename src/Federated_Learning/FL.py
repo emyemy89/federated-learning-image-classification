@@ -41,6 +41,21 @@ NUMBER_OF_CLIENTS = 5
 # Data Loaders
 client_training_loaders = create_non_IID_client_loaders(number_of_clients = NUMBER_OF_CLIENTS, mnist_trainset = mnist_trainset)
 
+'''DEBUG_CLIENT_DISTRIBUTION = True
+if DEBUG_CLIENT_DISTRIBUTION:
+    print("\nSampled label distribution per client (first few batches):")
+    for client_id, loader in enumerate(client_training_loaders):
+        label_counts = Counter()
+        for batch_idx, (_, labels) in enumerate(loader):
+            label_counts.update(labels.tolist())
+            if batch_idx >= 9:  # sample first 10 batches only
+                break
+        digits = sorted(label_counts.keys())
+        print(
+            f"Client {client_id}: digits={digits} "
+            f"counts={{" + ", ".join(f"{d}:{label_counts[d]}" for d in digits) + "}}"
+        )
+'''
 
 val_loader = DataLoader(mnist_valset, batch_size = 64, shuffle = False)
 test_loader = DataLoader(mnist_testset, batch_size=64, shuffle=False)

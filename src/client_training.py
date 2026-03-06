@@ -86,18 +86,32 @@ def create_IID_client_loaders(number_of_clients, mnist_trainset):
     return client_training_loaders
 
 def create_non_IID_client_loaders(number_of_clients, mnist_trainset):
-    labels = mnist_trainset.dataset.targets if hasattr(mnist_trainset, "dataset") else mnist_trainset.targets # [5,0,1,2,1,4,5....]
-    # group indices by digits
+    # ensure that the 10 digits can be evenly split across clients
+    if 10 % number_of_clients != 0:
+        raise ValueError(f"number_of_clients={number_of_clients} must divide 10 for non-IID split.")
+
+    # group indices (RELATIVE TO mnist_trainset) by digit label
     label_indices = {i: [] for i in range(10)}
-    for idx, label in enumerate(labels):
-        label_indices[int(label)].append(idx) # sth like 'indices of images that are 0: [1,6,11,...]'
+
+    # If we passed in a Subset (as in FL.py, where mnist_trainset is a train split),
+    # we must map from its local indices to labels using the underlying dataset.
+    if isinstance(mnist_trainset, Subset):
+        base_targets = mnist_trainset.dataset.targets
+        for local_idx, original_idx in enumerate(mnist_trainset.indices):
+            label = int(base_targets[original_idx])
+            label_indices[label].append(local_idx)
+    else:
+        labels = mnist_trainset.targets  # full MNIST dataset
+        for idx, label in enumerate(labels):
+            label_indices[int(label)].append(idx)
+
     # assign digits to clients
     digits_per_client = 10 // number_of_clients
     client_training_loaders = []
     for client in range(number_of_clients):
         client_indices = []
         start_digit = client * digits_per_client
-        end_digit = start_digit +  digits_per_client
+        end_digit = start_digit + digits_per_client
         for digit in range(start_digit, end_digit):
             client_indices.extend(label_indices[digit])
         client_dataset = Subset(mnist_trainset, client_indices)
