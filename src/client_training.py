@@ -8,7 +8,7 @@ from torch.utils.data import random_split, DataLoader, Subset
 
 from plotting import plot_loss, plot_acc
 
-
+# function for local training in FL settings
 def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr = 0.1):
     criterion = nn.CrossEntropyLoss()
     optimiser = optim.SGD(model.parameters(), lr = lr)
@@ -35,12 +35,9 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
             print(f"Epoch {epoch+1}/{number_of_epochs}, Loss: {avg_loss:.4f}")
     return model.state_dict(), losses, val_accuracies # return a dictionary of model parameters
 
-# client_model = CNN()
-# weights = train_local(client_model, client_loaders[0], epochs = 1, lr = 0.1)
-# print(weights.keys())
 
+# function for calculating accuracy
 def evaluate_model(dataloader, global_model, is_final):
-    # test_loader = DataLoader(mnist_testset, batch_size=64, shuffle=False)
     global_model.eval()
     correct = 0
     total = 0
@@ -54,10 +51,9 @@ def evaluate_model(dataloader, global_model, is_final):
     accuracy = (correct / total)*100
     if(is_final):
         print(f'Accuracy {accuracy}%\n')
-    
-    
     return accuracy
 
+# function to aggregate weights in FL global model computation at each round
 def aggregate(number_of_samples, client_state_dictionary, global_model):
     global_state_dictionary = {} # here averaged weights will be stored
     total_samples = sum(number_of_samples)
@@ -75,18 +71,20 @@ def aggregate(number_of_samples, client_state_dictionary, global_model):
 
 # Data Loaders
 # Client abstraction, split training dataset into clients
+
+# loader for IID data
 def create_IID_client_loaders(number_of_clients, mnist_trainset):
     trainset_size = len(mnist_trainset)
     client_trainset_size = trainset_size // number_of_clients  # we use // instead of / to remove the fractional part
     client_trainsets = random_split(mnist_trainset,
                                     [client_trainset_size] * number_of_clients)  # a list with: client_datasets[0], client_datasets[1], ...[5]
-
     client_training_loaders = []
     for dataset in client_trainsets:
         train_loader = DataLoader(dataset, batch_size=64, shuffle=True)
         client_training_loaders.append(train_loader)
     return client_training_loaders
 
+# loader for pure non-IID data
 def create_non_IID_client_loaders(number_of_clients, mnist_trainset):
     if number_of_clients <= 0:
         raise ValueError("number_of_clients must be > 0")
@@ -115,7 +113,6 @@ def create_non_IID_client_loaders(number_of_clients, mnist_trainset):
             start = client * q + min(client, r)
             end = start + q + (1 if client < r else 0)
             assigned_digits = digits[start:end]
-
         client_indices = []
         for digit in assigned_digits:
             client_indices.extend(label_indices[digit])
@@ -124,10 +121,10 @@ def create_non_IID_client_loaders(number_of_clients, mnist_trainset):
         client_training_loaders.append(loader)
     return client_training_loaders
 
+# loader for dirichlet distribution of non-IID data
 def create_dirichlet_client_loaders(number_of_clients, mnist_trainset, alpha=0.5, batch_size=64, seed=None):
     """
     Non-IID split using Dirichlet distribution over class proportions.
-
     - Smaller alpha => more skewed per-client label distributions.
     - Larger alpha  => more balanced per-client label distributions.
     """
@@ -135,10 +132,8 @@ def create_dirichlet_client_loaders(number_of_clients, mnist_trainset, alpha=0.5
         raise ValueError("number_of_clients must be > 0")
     if alpha <= 0:
         raise ValueError("alpha must be > 0")
-
     if seed is not None:
         torch.manual_seed(seed)
-
     # Build label -> indices mapping (indices relative to mnist_trainset)
     label_indices = {i: [] for i in range(10)}
     if isinstance(mnist_trainset, Subset):
@@ -150,20 +145,16 @@ def create_dirichlet_client_loaders(number_of_clients, mnist_trainset, alpha=0.5
         labels = mnist_trainset.targets
         for idx, label in enumerate(labels):
             label_indices[int(label)].append(idx)
-
     # Allocate samples per class to clients according to Dirichlet proportions
     client_indices = [[] for _ in range(number_of_clients)]
     dirichlet = torch.distributions.Dirichlet(torch.full((number_of_clients,), float(alpha)))
-
     for digit in range(10):
         idxs = label_indices[digit]
         if not idxs:
             continue
-
         # shuffle indices for this class
         perm = torch.randperm(len(idxs)).tolist()
         idxs = [idxs[i] for i in perm]
-
         proportions = dirichlet.sample()
         cut_points = (torch.cumsum(proportions, dim=0) * len(idxs)).to(torch.int64)
         cut_points[-1] = len(idxs)  # avoid any rounding issues
@@ -181,13 +172,13 @@ def create_dirichlet_client_loaders(number_of_clients, mnist_trainset, alpha=0.5
         if len(client_indices[donor]) == 0:
             break
         client_indices[empty_client].append(client_indices[donor].pop())
-
     return [
         DataLoader(Subset(mnist_trainset, idxs), batch_size=batch_size, shuffle=True)
         for idxs in client_indices
     ]
 
 
+# helper function for running ML algorithms
 def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, model):
     # do training
     _, losses, val_accuracies = train_local( model, train_loader, val_loader, number_of_epochs, 0.01)
@@ -196,15 +187,13 @@ def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, 
     plot_loss( losses)
     plot_acc( val_accuracies)
 
-
+# helper function for running FL algorithms
 def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_training_loaders, val_loader, test_loader):
     global_losses = []  # avg client loss per round
     global_val_accuracies = []  # global model val accuracy per round
-
     for round in range(number_of_rounds):
         print("---------------------------------")
         print(f"Round {round + 1}:\n")
-
         client_state_dictionary = []
         number_of_samples = []
         round_losses = []
@@ -227,7 +216,6 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
         print("Validation Accuracy:")
         round_val_accuracy = evaluate_model(val_loader, global_model, True)
         global_val_accuracies.append(round_val_accuracy)
-
     # compute accuracy
     print("Final Model Accuracy: ")
     evaluate_model(test_loader, global_model, True)
@@ -235,6 +223,7 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
     plot_loss(global_losses)
     plot_acc(global_val_accuracies)
 
+# helper function for printing what digits do clients get when data is non-IID
 def debug_non_iid_split(client_training_loaders):
     print("\nSampled label distribution per client (first few batches):")
     for client_id, loader in enumerate(client_training_loaders):
