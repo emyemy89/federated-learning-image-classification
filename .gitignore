@@ -4,7 +4,7 @@
 
 **/__pycache__/
 
-# Generated plots (do not track)
+# Generated plots
 src/Federated_Learning/accuracy.png
 src/Federated_Learning/loss.png
 results/*.png
