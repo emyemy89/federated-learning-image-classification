@@ -88,10 +88,8 @@ def create_IID_client_loaders(number_of_clients, mnist_trainset):
 def create_non_IID_client_loaders(number_of_clients, mnist_trainset):
     if number_of_clients <= 0:
         raise ValueError("number_of_clients must be > 0")
-
     # group indices (RELATIVE TO mnist_trainset) by digit label
     label_indices = {i: [] for i in range(10)}
-
     # If we passed in a Subset (as in FL.py, where mnist_trainset is a train split),
     # we must map from its local indices to labels using the underlying dataset.
     if isinstance(mnist_trainset, Subset):
@@ -103,7 +101,6 @@ def create_non_IID_client_loaders(number_of_clients, mnist_trainset):
         labels = mnist_trainset.targets  # full MNIST dataset
         for idx, label in enumerate(labels):
             label_indices[int(label)].append(idx)
-
     # assign digits to clients (works for any number_of_clients)
     digits = list(range(10))
     q, r = divmod(len(digits), number_of_clients)  # base digits per client + remainder
@@ -124,6 +121,69 @@ def create_non_IID_client_loaders(number_of_clients, mnist_trainset):
         loader = DataLoader(client_dataset, batch_size=64, shuffle=True)
         client_training_loaders.append(loader)
     return client_training_loaders
+
+def create_dirichlet_client_loaders(number_of_clients, mnist_trainset, alpha=0.5, batch_size=64, seed=None):
+    """
+    Non-IID split using Dirichlet distribution over class proportions.
+
+    - Smaller alpha => more skewed per-client label distributions.
+    - Larger alpha  => more balanced per-client label distributions.
+    """
+    if number_of_clients <= 0:
+        raise ValueError("number_of_clients must be > 0")
+    if alpha <= 0:
+        raise ValueError("alpha must be > 0")
+
+    if seed is not None:
+        torch.manual_seed(seed)
+
+    # Build label -> indices mapping (indices relative to mnist_trainset)
+    label_indices = {i: [] for i in range(10)}
+    if isinstance(mnist_trainset, Subset):
+        base_targets = mnist_trainset.dataset.targets
+        for local_idx, original_idx in enumerate(mnist_trainset.indices):
+            label = int(base_targets[original_idx])
+            label_indices[label].append(local_idx)
+    else:
+        labels = mnist_trainset.targets
+        for idx, label in enumerate(labels):
+            label_indices[int(label)].append(idx)
+
+    # Allocate samples per class to clients according to Dirichlet proportions
+    client_indices = [[] for _ in range(number_of_clients)]
+    dirichlet = torch.distributions.Dirichlet(torch.full((number_of_clients,), float(alpha)))
+
+    for digit in range(10):
+        idxs = label_indices[digit]
+        if not idxs:
+            continue
+
+        # shuffle indices for this class
+        perm = torch.randperm(len(idxs)).tolist()
+        idxs = [idxs[i] for i in perm]
+
+        proportions = dirichlet.sample()
+        cut_points = (torch.cumsum(proportions, dim=0) * len(idxs)).to(torch.int64)
+        cut_points[-1] = len(idxs)  # avoid any rounding issues
+
+        start = 0
+        for client_id, end in enumerate(cut_points.tolist()):
+            if end > start:
+                client_indices[client_id].extend(idxs[start:end])
+            start = end
+
+    # Avoid empty clients (can happen with small alpha / unlucky sampling)
+    empties = [i for i, idxs in enumerate(client_indices) if len(idxs) == 0]
+    for empty_client in empties:
+        donor = max(range(number_of_clients), key=lambda i: len(client_indices[i]))
+        if len(client_indices[donor]) == 0:
+            break
+        client_indices[empty_client].append(client_indices[donor].pop())
+
+    return [
+        DataLoader(Subset(mnist_trainset, idxs), batch_size=batch_size, shuffle=True)
+        for idxs in client_indices
+    ]
 
 
 def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, model):
