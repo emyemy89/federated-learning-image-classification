@@ -86,9 +86,8 @@ def create_IID_client_loaders(number_of_clients, mnist_trainset):
     return client_training_loaders
 
 def create_non_IID_client_loaders(number_of_clients, mnist_trainset):
-    # ensure that the 10 digits can be evenly split across clients
-    if 10 % number_of_clients != 0:
-        raise ValueError(f"number_of_clients={number_of_clients} must divide 10 for non-IID split.")
+    if number_of_clients <= 0:
+        raise ValueError("number_of_clients must be > 0")
 
     # group indices (RELATIVE TO mnist_trainset) by digit label
     label_indices = {i: [] for i in range(10)}
@@ -105,14 +104,21 @@ def create_non_IID_client_loaders(number_of_clients, mnist_trainset):
         for idx, label in enumerate(labels):
             label_indices[int(label)].append(idx)
 
-    # assign digits to clients
-    digits_per_client = 10 // number_of_clients
+    # assign digits to clients (works for any number_of_clients)
+    digits = list(range(10))
+    q, r = divmod(len(digits), number_of_clients)  # base digits per client + remainder
     client_training_loaders = []
     for client in range(number_of_clients):
+        if q == 0:
+            # more clients than digits: reuse digits round-robin so every client has data
+            assigned_digits = [digits[client % len(digits)]]
+        else:
+            start = client * q + min(client, r)
+            end = start + q + (1 if client < r else 0)
+            assigned_digits = digits[start:end]
+
         client_indices = []
-        start_digit = client * digits_per_client
-        end_digit = start_digit + digits_per_client
-        for digit in range(start_digit, end_digit):
+        for digit in assigned_digits:
             client_indices.extend(label_indices[digit])
         client_dataset = Subset(mnist_trainset, client_indices)
         loader = DataLoader(client_dataset, batch_size=64, shuffle=True)
