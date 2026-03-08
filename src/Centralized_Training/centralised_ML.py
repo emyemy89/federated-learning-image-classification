@@ -7,7 +7,7 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 
-from client_training import run_centralised_ml
+from src.client_training import run_centralised_ml
 from src.CNN_implementation import CNN
 
 # %%
@@ -17,6 +17,7 @@ transform = transforms.ToTensor()
 full_mnist_trainset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
 train_size = int(0.7 * len(full_mnist_trainset))
 val_size = len(full_mnist_trainset) - train_size
+
 mnist_trainset, mnist_valset = random_split(full_mnist_trainset, [train_size, val_size])
 mnist_testset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
 
