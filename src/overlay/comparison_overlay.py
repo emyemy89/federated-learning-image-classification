@@ -29,13 +29,13 @@ mnist_testset = datasets.MNIST(root = './data', train = False, download = True, 
 # a CNN with 2 layers: Layer1-> Relu->Pool->Layer2->...->Flatten->Fully connected->Output
 gl_model = CNN()
 model = CNN()
-NUMBER_OF_CLIENTS = 3
+NUMBER_OF_CLIENTS = 5
 # %%
 # Data Loaders
 client_training_loaders = create_dirichlet_client_loaders(number_of_clients = NUMBER_OF_CLIENTS,
                                                           mnist_trainset = mnist_trainset,
-                                                          alpha = 10)
-train_loader = DataLoader(full_mnist_trainset, batch_size = 64, shuffle = True)
+                                                          alpha = 0.5)
+train_loader = DataLoader(mnist_trainset, batch_size = 64, shuffle = True)
 ###
 # this will show what digits each client has
 debug_non_iid_split(client_training_loaders)

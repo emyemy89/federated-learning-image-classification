@@ -96,7 +96,7 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
                                              number_of_epochs=epochs, lr=0.1)  # train it
             client_state_dictionary.append(weights)  # store the weights
             number_of_samples.append(len(client_training_loaders[client].dataset))  # store number of samples
-            round_losses.append(losses[-1])
+            round_losses.append(sum(losses) / len(losses))  # avg over epochs for this client
         # aggregate
         round_loss = sum(round_losses) / len(round_losses)
         global_losses.append(round_loss)  # average the loss for the whole round
@@ -113,4 +113,4 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
 
     plot_loss(global_losses)
     plot_acc(global_val_accuracies)
-    return losses, global_val_accuracies
+    return global_losses, global_val_accuracies
