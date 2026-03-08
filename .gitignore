@@ -8,3 +8,5 @@
 src/Federated_Learning/accuracy.png
 src/Federated_Learning/loss.png
 results/*.png
+src/overlay/loss_comparison.png
+src/overlay/acc_comparison.png
