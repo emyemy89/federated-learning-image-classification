@@ -76,6 +76,7 @@ def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, 
     print(f"Test Accuracy: {test_accuracy:.2f}%")
     plot_loss( losses)
     plot_acc( val_accuracies)
+    return losses, val_accuracies
 
 # helper function for running FL algorithms
 def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_training_loaders, val_loader, test_loader):
@@ -112,3 +113,4 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
 
     plot_loss(global_losses)
     plot_acc(global_val_accuracies)
+    return losses, global_val_accuracies
