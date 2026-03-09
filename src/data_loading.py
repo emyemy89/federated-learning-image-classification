@@ -70,7 +70,7 @@ def create_dirichlet_client_loaders(number_of_clients, mnist_trainset, alpha=0.5
     if seed is not None:
         torch.manual_seed(seed)
     # Build label -> indices mapping (indices relative to mnist_trainset)
-    label_indices = {i: [] for i in range(10)}
+    label_indices = {i: [] for i in range(10)} # dictionary of digits
     if isinstance(mnist_trainset, Subset):
         base_targets = mnist_trainset.dataset.targets
         for local_idx, original_idx in enumerate(mnist_trainset.indices):
@@ -81,29 +81,29 @@ def create_dirichlet_client_loaders(number_of_clients, mnist_trainset, alpha=0.5
         for idx, label in enumerate(labels):
             label_indices[int(label)].append(idx)
     # Allocate samples per class to clients according to Dirichlet proportions
-    client_indices = [[] for _ in range(number_of_clients)]
-    dirichlet = torch.distributions.Dirichlet(torch.full((number_of_clients,), float(alpha)))
-    for digit in range(10):
+    client_indices = [[] for _ in range(number_of_clients)] # list of size 'number_of_clients'
+    dirichlet = torch.distributions.Dirichlet(torch.full((number_of_clients,), float(alpha))) # create the distribution based on alpha
+    for digit in range(10): # loops over the 10 digits
         idxs = label_indices[digit]
         if not idxs:
             continue
         # shuffle indices for this class
-        perm = torch.randperm(len(idxs)).tolist()
+        perm = torch.randperm(len(idxs)).tolist() # shuffle the indices so distribution is random
         idxs = [idxs[i] for i in perm]
-        proportions = dirichlet.sample()
-        cut_points = (torch.cumsum(proportions, dim=0) * len(idxs)).to(torch.int64)
+        proportions = dirichlet.sample() # sample proportions, e.g. for 5 clients: [0.4, 0.3, 0.2, 0.07, 0.03]
+        cut_points = (torch.cumsum(proportions, dim=0) * len(idxs)).to(torch.int64) # convert the proportions above to counts(how many samples)
         cut_points[-1] = len(idxs)  # avoid any rounding issues
 
         start = 0
         for client_id, end in enumerate(cut_points.tolist()):
             if end > start:
-                client_indices[client_id].extend(idxs[start:end])
+                client_indices[client_id].extend(idxs[start:end]) # assign those counts to clients
             start = end
 
     # Avoid empty clients (can happen with small alpha / unlucky sampling)
     empties = [i for i, idxs in enumerate(client_indices) if len(idxs) == 0]
     for empty_client in empties:
-        donor = max(range(number_of_clients), key=lambda i: len(client_indices[i]))
+        donor = max(range(number_of_clients), key=lambda i: len(client_indices[i])) # if a client has no samples, another clients with many classes can donate one to the client without
         if len(client_indices[donor]) == 0:
             break
         client_indices[empty_client].append(client_indices[donor].pop())
