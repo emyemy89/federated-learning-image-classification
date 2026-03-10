@@ -30,11 +30,14 @@ mnist_testset = datasets.MNIST(root = './data', train = False, download = True, 
 gl_model = CNN()
 model = CNN()
 NUMBER_OF_CLIENTS = 5
+NUMBER_OF_EPOCHS = 3
+NUMBER_OF_ROUNDS = 3
+DIRICHLET_ALPHA = 0.1
 # %%
 # Data Loaders
 client_training_loaders = create_dirichlet_client_loaders(number_of_clients = NUMBER_OF_CLIENTS,
                                                           mnist_trainset = mnist_trainset,
-                                                          alpha = 0.5)
+                                                          alpha = DIRICHLET_ALPHA)
 train_loader = DataLoader(mnist_trainset, batch_size = 64, shuffle = True)
 ###
 # this will show what digits each client has
@@ -44,19 +47,20 @@ val_loader = DataLoader(mnist_valset, batch_size = 64, shuffle = False)
 test_loader = DataLoader(mnist_testset, batch_size=64, shuffle=False)
 
 # %%
-central_losses, central_val_accs = run_centralised_ml(number_of_epochs = 3,
-                   train_loader = train_loader,
-                   val_loader = val_loader,
-                   test_loader = test_loader,
-                   model = model)
+central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = NUMBER_OF_EPOCHS,
+                                                      train_loader = train_loader,
+                                                      val_loader = val_loader,
+                                                      test_loader = test_loader,
+                                                      model = model)
+
 # Now we need to aggregate the results with FedAvg
-fed_losses, fed_val_accs = run_fl(number_of_rounds = 3,
-       number_of_clients = NUMBER_OF_CLIENTS,
-       epochs = 3,
-       global_model = gl_model,
-       client_training_loaders = client_training_loaders,
-       val_loader = val_loader,
-       test_loader = test_loader)
+fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUNDS,
+                                              number_of_clients = NUMBER_OF_CLIENTS,
+                                              epochs = NUMBER_OF_EPOCHS,
+                                              global_model = gl_model,
+                                              client_training_loaders = client_training_loaders,
+                                              val_loader = val_loader,
+                                              test_loader = test_loader)
 
 plot_loss_overlay(central_losses, fed_losses)
 plot_acc_overlay(central_val_accs, fed_val_accs)
