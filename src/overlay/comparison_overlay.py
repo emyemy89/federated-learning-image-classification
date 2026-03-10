@@ -11,7 +11,11 @@ from torch.utils.data import random_split # use for data distribution for client
 from src.client_training import run_fl, run_centralised_ml
 from src.data_loading import create_dirichlet_client_loaders, debug_non_iid_split
 from src.CNN_implementation import CNN
-from src.plotting import plot_loss_overlay, plot_acc_overlay
+from src.plotting import (
+    plot_loss_overlay,
+    plot_acc_overlay,
+    plot_client_label_distribution,
+)
 
 
 # %%
@@ -32,7 +36,7 @@ model = CNN()
 NUMBER_OF_CLIENTS = 5
 NUMBER_OF_EPOCHS = 3
 NUMBER_OF_ROUNDS = 3
-DIRICHLET_ALPHA = 0.1
+DIRICHLET_ALPHA = 0.01
 # %%
 # Data Loaders
 client_training_loaders = create_dirichlet_client_loaders(number_of_clients = NUMBER_OF_CLIENTS,
@@ -40,8 +44,14 @@ client_training_loaders = create_dirichlet_client_loaders(number_of_clients = NU
                                                           alpha = DIRICHLET_ALPHA)
 train_loader = DataLoader(mnist_trainset, batch_size = 64, shuffle = True)
 ###
-# this will show what digits each client has
+# this will show what digits each client has (console)
 debug_non_iid_split(client_training_loaders)
+# and create a heatmap-style overview per client
+plot_client_label_distribution(
+    client_training_loaders,
+    title="Client label distribution (Dirichlet)",
+    save_path="client_label_distribution.png",
+)
 
 val_loader = DataLoader(mnist_valset, batch_size = 64, shuffle = False)
 test_loader = DataLoader(mnist_testset, batch_size=64, shuffle=False)

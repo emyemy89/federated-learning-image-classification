@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 def plot_loss( losses):
     epochs = range(1, len(losses) + 1)
@@ -71,4 +72,42 @@ def plot_acc_overlay(central_accs, fed_accs):
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig("acc_comparison.png", dpi=150)
+    plt.show()
+
+
+def plot_client_label_distribution(
+    client_training_loaders,
+    num_classes: int = 10,
+    title: str = "Client label distribution",
+    save_path: str = "client_label_distribution.png",
+):
+    """
+    Visualize how many samples of each label each client has
+    using a heatmap (clients x classes).
+    """
+    num_clients = len(client_training_loaders)
+    counts = np.zeros((num_clients, num_classes), dtype=int)
+
+    for client_id, loader in enumerate(client_training_loaders):
+        dataset = loader.dataset
+        for _, label in dataset:
+            counts[client_id, int(label)] += 1
+
+    fig, ax = plt.subplots(figsize=(1 + num_classes * 0.6, 1 + num_clients * 0.6))
+    im = ax.imshow(counts, aspect="auto", cmap="Blues")
+
+    ax.set_xlabel("Digit label")
+    ax.set_ylabel("Client")
+    ax.set_title(title)
+
+    ax.set_xticks(range(num_classes))
+    ax.set_xticklabels(range(num_classes))
+    ax.set_yticks(range(num_clients))
+    ax.set_yticklabels([f"C{idx}" for idx in range(num_clients)])
+
+    cbar = fig.colorbar(im, ax=ax)
+    cbar.set_label("Number of samples")
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=150)
     plt.show()
