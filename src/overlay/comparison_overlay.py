@@ -47,11 +47,7 @@ train_loader = DataLoader(mnist_trainset, batch_size = 64, shuffle = True)
 # this will show what digits each client has (console)
 debug_non_iid_split(client_training_loaders)
 # and create a heatmap-style overview per client
-plot_client_label_distribution(
-    client_training_loaders,
-    title="Client label distribution (Dirichlet)",
-    save_path="client_label_distribution.png",
-)
+plot_client_label_distribution(client_training_loaders)
 
 val_loader = DataLoader(mnist_valset, batch_size = 64, shuffle = False)
 test_loader = DataLoader(mnist_testset, batch_size=64, shuffle=False)

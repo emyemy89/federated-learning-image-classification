@@ -75,17 +75,13 @@ def plot_acc_overlay(central_accs, fed_accs):
     plt.show()
 
 
-def plot_client_label_distribution(
-    client_training_loaders,
-    num_classes: int = 10,
-    title: str = "Client label distribution",
-    save_path: str = "client_label_distribution.png",
-):
+def plot_client_label_distribution(client_training_loaders):
     """
     Visualize how many samples of each label each client has
     using a heatmap (clients x classes).
     """
     num_clients = len(client_training_loaders)
+    num_classes = 10
     counts = np.zeros((num_clients, num_classes), dtype=int)
 
     for client_id, loader in enumerate(client_training_loaders):
@@ -98,7 +94,7 @@ def plot_client_label_distribution(
 
     ax.set_xlabel("Digit label")
     ax.set_ylabel("Client")
-    ax.set_title(title)
+    ax.set_title("Client label distribution (Dirichlet)")
 
     ax.set_xticks(range(num_classes))
     ax.set_xticklabels(range(num_classes))
@@ -109,5 +105,5 @@ def plot_client_label_distribution(
     cbar.set_label("Number of samples")
 
     plt.tight_layout()
-    plt.savefig(save_path, dpi=150)
+    plt.savefig("client_label_distribution.png", dpi=150)
     plt.show()
