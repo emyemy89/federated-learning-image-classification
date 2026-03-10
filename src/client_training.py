@@ -5,7 +5,7 @@ import copy
 import torch.nn as nn
 import torch.optim as optim
 
-from plotting import plot_loss, plot_acc
+from src.plotting import plot_loss, plot_acc
 
 # function for local training in FL settings
 def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr = 0.1):

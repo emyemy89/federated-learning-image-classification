@@ -8,10 +8,10 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split # use for data distribution for clients
 
-from client_training import run_fl, run_centralised_ml
-from data_loading import create_dirichlet_client_loaders, debug_non_iid_split
+from src.client_training import run_fl, run_centralised_ml
+from src.data_loading import create_dirichlet_client_loaders, debug_non_iid_split
 from src.CNN_implementation import CNN
-from src.plotting import plot_loss_overlay, plot_acc_overlay  # the new file
+from src.plotting import plot_loss_overlay, plot_acc_overlay
 
 
 # %%
