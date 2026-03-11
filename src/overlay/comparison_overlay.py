@@ -37,20 +37,21 @@ NUMBER_OF_CLIENTS = 5
 NUMBER_OF_EPOCHS = 3
 NUMBER_OF_ROUNDS = 3
 DIRICHLET_ALPHA = 0.01
+BATCH_SIZE = 64
 # %%
 # Data Loaders
 client_training_loaders = create_dirichlet_client_loaders(number_of_clients = NUMBER_OF_CLIENTS,
                                                           mnist_trainset = mnist_trainset,
                                                           alpha = DIRICHLET_ALPHA)
-train_loader = DataLoader(mnist_trainset, batch_size = 64, shuffle = True)
+train_loader = DataLoader(mnist_trainset, batch_size = BATCH_SIZE, shuffle = True)
 ###
 # this will show what digits each client has (console)
 debug_non_iid_split(client_training_loaders)
 # and create a heatmap-style overview per client
 plot_client_label_distribution(client_training_loaders)
 
-val_loader = DataLoader(mnist_valset, batch_size = 64, shuffle = False)
-test_loader = DataLoader(mnist_testset, batch_size=64, shuffle=False)
+val_loader = DataLoader(mnist_valset, batch_size = BATCH_SIZE, shuffle = False)
+test_loader = DataLoader(mnist_testset, batch_size = BATCH_SIZE, shuffle=False)
 
 # %%
 central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = NUMBER_OF_EPOCHS,
