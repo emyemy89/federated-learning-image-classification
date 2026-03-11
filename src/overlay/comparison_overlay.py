@@ -5,8 +5,7 @@ sys.path.append(os.path.abspath("../.."))
 print(sys.executable)
 
 from torchvision import datasets, transforms
-from torch.utils.data import DataLoader
-from torch.utils.data import random_split # use for data distribution for clients
+from torch.utils.data import DataLoader, random_split
 
 from src.client_training import run_fl, run_centralised_ml
 from src.data_loading import create_dirichlet_client_loaders, debug_non_iid_split
@@ -33,10 +32,11 @@ mnist_testset = datasets.MNIST(root = './data', train = False, download = True, 
 # a CNN with 2 layers: Layer1-> Relu->Pool->Layer2->...->Flatten->Fully connected->Output
 gl_model = CNN()
 model = CNN()
+
 NUMBER_OF_CLIENTS = 5
 NUMBER_OF_EPOCHS = 3
 NUMBER_OF_ROUNDS = 3
-DIRICHLET_ALPHA = 0.01
+DIRICHLET_ALPHA = 1
 BATCH_SIZE = 64
 # %%
 # Data Loaders
@@ -47,8 +47,6 @@ train_loader = DataLoader(mnist_trainset, batch_size = BATCH_SIZE, shuffle = Tru
 ###
 # this will show what digits each client has (console)
 debug_non_iid_split(client_training_loaders)
-# and create a heatmap-style overview per client
-plot_client_label_distribution(client_training_loaders)
 
 val_loader = DataLoader(mnist_valset, batch_size = BATCH_SIZE, shuffle = False)
 test_loader = DataLoader(mnist_testset, batch_size = BATCH_SIZE, shuffle=False)
@@ -69,5 +67,7 @@ fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUN
                                               val_loader = val_loader,
                                               test_loader = test_loader)
 
-plot_loss_overlay(central_losses, fed_losses)
-plot_acc_overlay(central_val_accs, fed_val_accs)
+# PLOTS
+plot_loss_overlay(central_losses, fed_losses) # loss comparison between ML and FL
+plot_acc_overlay(central_val_accs, fed_val_accs) # accuracy comparison between ML and FL
+plot_client_label_distribution(client_training_loaders) # create a heatmap-style overview per client
