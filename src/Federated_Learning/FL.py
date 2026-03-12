@@ -10,7 +10,7 @@ from torch.utils.data import random_split # use for data distribution for client
 
 from client_training import run_fl
 from data_loading import create_dirichlet_client_loaders, debug_non_iid_split
-from src.CNN_implementation import CNN
+from src.model_implementation import CNN
 
 # %%
 # Data Loading

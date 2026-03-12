@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 
 from src.client_training import run_centralised_ml
-from src.CNN_implementation import CNN
+from src.model_implementation import CNN
 
 # %%
 # load the dataset

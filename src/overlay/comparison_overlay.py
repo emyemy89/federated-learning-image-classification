@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, random_split
 
 from src.client_training import run_fl, run_centralised_ml
 from src.data_loading import create_dirichlet_client_loaders, debug_non_iid_split
-from src.CNN_implementation import CNN, MLP
+from src.model_implementation import CNN, MLP
 from src.plotting import (
     plot_loss_overlay,
     plot_acc_overlay,
