@@ -1,3 +1,5 @@
+# MLP source: https://machinelearningmastery.com/building-multilayer-perceptron-models-in-pytorch/
+import torch
 import torch.nn as nn
 
 class CNN(nn.Module): # we take the standard class and modify it
@@ -24,3 +26,20 @@ class CNN(nn.Module): # we take the standard class and modify it
                                   # [1, 32, 5, 5] -> [1, 800]
         x = self.fully_connected(x)
         return x
+
+# image is treated as a vector of numbers
+class MLP(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.network = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(28*28, 128), # a linear layer computes y=Wx+b (x is input vector, W is weight matrix and b is bias)
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, 10)
+        )
+
+    def forward(self, x):
+        return self.network(x)

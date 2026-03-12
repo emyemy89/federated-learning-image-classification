@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, random_split
 
 from src.client_training import run_fl, run_centralised_ml
 from src.data_loading import create_dirichlet_client_loaders, debug_non_iid_split
-from src.CNN_implementation import CNN
+from src.CNN_implementation import CNN, MLP
 from src.plotting import (
     plot_loss_overlay,
     plot_acc_overlay,
@@ -30,8 +30,8 @@ mnist_testset = datasets.MNIST(root = './data', train = False, download = True, 
 # %%
 # CNN
 # a CNN with 2 layers: Layer1-> Relu->Pool->Layer2->...->Flatten->Fully connected->Output
-gl_model = CNN()
-model = CNN()
+gl_model = MLP()
+model = MLP()
 
 NUMBER_OF_CLIENTS = 5
 NUMBER_OF_EPOCHS = 3
