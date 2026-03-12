@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, random_split
 
 from src.client_training import run_fl, run_centralised_ml
 from src.data_loading import create_dirichlet_client_loaders, debug_non_iid_split
-from src.CNN_implementation import CNN
+from src.model_implementation import CNN, MLP
 from src.plotting import (
     plot_loss_overlay,
     plot_acc_overlay,
@@ -28,15 +28,14 @@ val_size = len(full_mnist_trainset) - train_size
 mnist_trainset, mnist_valset = random_split(full_mnist_trainset, [train_size, val_size])
 mnist_testset = datasets.MNIST(root = './data', train = False, download = True, transform = transform)
 # %%
-# CNN
-# a CNN with 2 layers: Layer1-> Relu->Pool->Layer2->...->Flatten->Fully connected->Output
+# the model: CNN or MLP
 gl_model = CNN()
 model = CNN()
 
 NUMBER_OF_CLIENTS = 5
 NUMBER_OF_EPOCHS = 3
 NUMBER_OF_ROUNDS = 3
-DIRICHLET_ALPHA = 1
+DIRICHLET_ALPHA = 0.05
 BATCH_SIZE = 64
 # %%
 # Data Loaders
@@ -44,9 +43,9 @@ client_training_loaders = create_dirichlet_client_loaders(number_of_clients = NU
                                                           mnist_trainset = mnist_trainset,
                                                           alpha = DIRICHLET_ALPHA)
 train_loader = DataLoader(mnist_trainset, batch_size = BATCH_SIZE, shuffle = True)
-###
+
 # this will show what digits each client has (console)
-debug_non_iid_split(client_training_loaders)
+# debug_non_iid_split(client_training_loaders)
 
 val_loader = DataLoader(mnist_valset, batch_size = BATCH_SIZE, shuffle = False)
 test_loader = DataLoader(mnist_testset, batch_size = BATCH_SIZE, shuffle=False)

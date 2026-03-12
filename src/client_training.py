@@ -1,7 +1,7 @@
 from collections import Counter
-
-import torch
 import copy
+import torch
+import time
 import torch.nn as nn
 import torch.optim as optim
 
@@ -70,9 +70,12 @@ def aggregate(number_of_samples, client_state_dictionary, global_model):
 
 # helper function for running ML algorithms
 def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, model):
+    start_time = time.time()
     # do training
     _, losses, val_accuracies = train_local( model, train_loader, val_loader, number_of_epochs, 0.01)
     test_accuracy = evaluate_model(test_loader, model, True)
+    end_time = time.time()
+    print(f"Total training time: {end_time-start_time:.2f} seconds")
     print(f"Test Accuracy: {test_accuracy:.2f}%")
     plot_loss( losses)
     plot_acc( val_accuracies)
@@ -82,6 +85,7 @@ def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, 
 def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_training_loaders, val_loader, test_loader):
     global_losses = []  # avg client loss per round
     global_val_accuracies = []  # global model val accuracy per round
+    start_time = time.time()
     for round in range(number_of_rounds):
         print("---------------------------------")
         print(f"Round {round + 1}:\n")
@@ -110,6 +114,8 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
     # compute accuracy
     print("Final Model Accuracy: ")
     evaluate_model(test_loader, global_model, True)
+    end_time = time.time()
+    print(f"Total training time: {end_time-start_time:.2f} seconds")
 
     plot_loss(global_losses)
     plot_acc(global_val_accuracies)
