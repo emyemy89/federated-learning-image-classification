@@ -28,8 +28,7 @@ val_size = len(full_mnist_trainset) - train_size
 mnist_trainset, mnist_valset = random_split(full_mnist_trainset, [train_size, val_size])
 mnist_testset = datasets.MNIST(root = './data', train = False, download = True, transform = transform)
 # %%
-# CNN
-# a CNN with 2 layers: Layer1-> Relu->Pool->Layer2->...->Flatten->Fully connected->Output
+# the model: CNN or MLP
 gl_model = MLP()
 model = MLP()
 
@@ -44,9 +43,9 @@ client_training_loaders = create_dirichlet_client_loaders(number_of_clients = NU
                                                           mnist_trainset = mnist_trainset,
                                                           alpha = DIRICHLET_ALPHA)
 train_loader = DataLoader(mnist_trainset, batch_size = BATCH_SIZE, shuffle = True)
-###
+
 # this will show what digits each client has (console)
-debug_non_iid_split(client_training_loaders)
+# debug_non_iid_split(client_training_loaders)
 
 val_loader = DataLoader(mnist_valset, batch_size = BATCH_SIZE, shuffle = False)
 test_loader = DataLoader(mnist_testset, batch_size = BATCH_SIZE, shuffle=False)

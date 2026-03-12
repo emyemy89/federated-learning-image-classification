@@ -2,6 +2,8 @@
 import torch
 import torch.nn as nn
 
+# CNN
+# a CNN with 2 layers: Layer1-> Relu->Pool->Layer2->...->Flatten->Fully connected->Output
 class CNN(nn.Module): # we take the standard class and modify it
     def __init__(self): # this is a constructor
         super(CNN,self).__init__()
@@ -31,7 +33,6 @@ class CNN(nn.Module): # we take the standard class and modify it
 class MLP(nn.Module):
     def __init__(self):
         super().__init__()
-
         self.network = nn.Sequential(
             nn.Flatten(),
             nn.Linear(28*28, 128), # a linear layer computes y=Wx+b (x is input vector, W is weight matrix and b is bias)
@@ -40,6 +41,5 @@ class MLP(nn.Module):
             nn.ReLU(),
             nn.Linear(64, 10)
         )
-
     def forward(self, x):
         return self.network(x)
