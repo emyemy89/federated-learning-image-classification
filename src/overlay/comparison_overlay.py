@@ -57,7 +57,7 @@ central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = NUMBE
                                                       val_loader = val_loader,
                                                       test_loader = test_loader,
                                                       model = model,
-                                                      lr = LR)
+                                                      lr = 0.03)
 
 # Now we need to aggregate the results with FedAvg
 fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUNDS,
@@ -67,7 +67,8 @@ fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUN
                                               client_training_loaders = client_training_loaders,
                                               val_loader = val_loader,
                                               test_loader = test_loader,
-                                              lr = LR)
+                                              lr = 0.1,
+                                               participation_rate = 1)
 
 # PLOTS
 plot_loss_overlay(central_losses, fed_losses) # loss comparison between ML and FL
