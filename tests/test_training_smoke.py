@@ -44,6 +44,26 @@ class TrainingSmokeTests(unittest.TestCase):
         self.assertGreaterEqual(val_accs[0], 0.0)
         self.assertLessEqual(val_accs[0], 100.0)
 
+    def test_centralised_one_epoch_runs_mlp(self):
+        """
+        Centralized training with MLP: smoke test that one epoch runs end-to-end.
+        """
+        model = MLP()
+        train_loader = DataLoader(self.small_train, batch_size=64, shuffle=True)
+        val_loader = DataLoader(self.val, batch_size=64, shuffle=False)
+        test_loader = DataLoader(self.test, batch_size=64, shuffle=False)
+
+        state_dict, losses, val_accs = train_local(
+            model, train_loader, val_loader, number_of_epochs=1, lr=0.01
+        )
+
+        self.assertIsInstance(state_dict, dict)
+        self.assertEqual(len(losses), 1)
+        self.assertEqual(len(val_accs), 1)
+        self.assertGreaterEqual(losses[0], 0.0)
+        self.assertGreaterEqual(val_accs[0], 0.0)
+        self.assertLessEqual(val_accs[0], 100.0)
+
     def test_federated_one_round_runs(self):
         """
         Federated training: ensure a minimal FedAvg run completes and returns metrics.
