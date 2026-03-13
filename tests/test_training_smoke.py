@@ -4,7 +4,7 @@ import torch
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, Subset
 
-from src.CNN_implementation import CNN
+from src.model_implementation import CNN, MLP
 from src.client_training import train_local, run_fl
 from src.data_loading import create_dirichlet_client_loaders
 
