@@ -4,6 +4,9 @@ import torch
 import time
 import torch.nn as nn
 import torch.optim as optim
+import numpy as np
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
+import matplotlib.pyplot as plt
 
 from src.plotting import plot_loss, plot_acc
 
@@ -120,3 +123,6 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
     plot_loss(global_losses)
     plot_acc(global_val_accuracies)
     return global_losses, global_val_accuracies
+
+def print_confusion_matrix():
+    cm = confusion_matrix(true, predicted, labels)
