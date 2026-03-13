@@ -69,10 +69,10 @@ def aggregate(number_of_samples, client_state_dictionary, global_model):
 
 
 # helper function for running ML algorithms
-def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, model):
+def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, model, lr):
     start_time = time.time()
     # do training
-    _, losses, val_accuracies = train_local( model, train_loader, val_loader, number_of_epochs, 0.01)
+    _, losses, val_accuracies = train_local( model, train_loader, val_loader, number_of_epochs, lr)
     test_accuracy = evaluate_model(test_loader, model, True)
     end_time = time.time()
     print(f"Total training time: {end_time-start_time:.2f} seconds")
@@ -82,7 +82,7 @@ def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, 
     return losses, val_accuracies
 
 # helper function for running FL algorithms
-def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_training_loaders, val_loader, test_loader):
+def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_training_loaders, val_loader, test_loader, lr):
     global_losses = []  # avg client loss per round
     global_val_accuracies = []  # global model val accuracy per round
     start_time = time.time()
@@ -97,7 +97,7 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
             print(f"Client{client + 1}:")
             local_model = copy.deepcopy(global_model)  # copy global model locally
             weights, losses, _ = train_local(model=local_model, train_loader=client_training_loaders[client],
-                                             number_of_epochs=epochs, lr=0.1)  # train it
+                                             number_of_epochs=epochs, lr=lr)  # train it
             client_state_dictionary.append(weights)  # store the weights
             number_of_samples.append(len(client_training_loaders[client].dataset))  # store number of samples
             round_losses.append(sum(losses) / len(losses))  # avg over epochs for this client
