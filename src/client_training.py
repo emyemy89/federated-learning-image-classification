@@ -52,11 +52,14 @@ def evaluate_model(dataloader, global_model, is_final, show_confusion):
                                                  # by using '_' we tell it to return only the indices and discard the val
             total += labels.size(0) # add batch size to keep track of processed batches
             correct += (predicted == labels).sum().item()
+            if show_confusion:
+                all_true.extend(labels.cpu().numpy()) # we need to convert labels to numpy arrays (from tensors) but they need to be on the CPU first (GPU doesn't allow)
+                all_predicted.extend(predicted.cpu().numpy())
     accuracy = (correct / total)*100
     if(is_final):
         print(f'Accuracy {accuracy}%\n')
     if(show_confusion):
-        print_confusion_matrix()
+        generate_confusion_matrix(all_true, all_predicted)
     return accuracy
 
 # function to aggregate weights in FL global model computation at each round
@@ -128,5 +131,5 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
     plot_acc(global_val_accuracies)
     return global_losses, global_val_accuracies
 
-def print_confusion_matrix():
-    cm = confusion_matrix(true, predicted, labels)
+def generate_confusion_matrix(true, predicted):
+    cm = confusion_matrix(true, predicted)
