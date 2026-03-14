@@ -6,9 +6,9 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
-import matplotlib.pyplot as plt
 
-from src.plotting import plot_loss, plot_acc
+
+from src.plotting import plot_loss, plot_acc, plot_cm
 
 # function for local training in FL settings
 def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr = 0.1):
@@ -133,3 +133,4 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
 
 def generate_confusion_matrix(true, predicted):
     cm = confusion_matrix(true, predicted)
+    plot_cm(cm)
