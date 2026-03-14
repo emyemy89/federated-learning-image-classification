@@ -111,6 +111,15 @@ def plot_client_label_distribution(client_training_loaders):
 
 def plot_cm(cm):
     plt.figure()
-    sns.heatmap(cm, annot=True, cmap="Blues")
+    sns.heatmap(
+        cm,
+        annot = True,
+        fmt = "d",  # force integer formatting
+        cmap = "Blues",
+        annot_kws = {"size": 10}  # control number size
+    )
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.title("Confusion Matrix")
     plt.savefig("confusion_matrix.png", dpi=150)
     plt.show()
