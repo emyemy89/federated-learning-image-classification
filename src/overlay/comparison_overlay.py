@@ -33,8 +33,8 @@ gl_model = MLP()
 model = MLP()
 
 NUMBER_OF_CLIENTS = 5
-NUMBER_OF_EPOCHS = 3
-NUMBER_OF_ROUNDS = 3
+NUMBER_OF_EPOCHS = 2
+NUMBER_OF_ROUNDS = 100
 DIRICHLET_ALPHA = 1
 BATCH_SIZE = 64
 # %%
@@ -51,14 +51,13 @@ val_loader = DataLoader(mnist_valset, batch_size = BATCH_SIZE, shuffle = False)
 test_loader = DataLoader(mnist_testset, batch_size = BATCH_SIZE, shuffle=False)
 
 # %%
-central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = 100,
+central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = NUMBER_OF_ROUNDS,
                                                       train_loader = train_loader,
                                                       val_loader = val_loader,
                                                       test_loader = test_loader,
                                                       model = model)
 
 # Now we need to aggregate the results with FedAvg
-"""""
 fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUNDS,
                                               number_of_clients = NUMBER_OF_CLIENTS,
                                               epochs = NUMBER_OF_EPOCHS,
@@ -66,8 +65,7 @@ fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUN
                                               client_training_loaders = client_training_loaders,
                                               val_loader = val_loader,
                                               test_loader = test_loader)
-"""""
 # PLOTS
-#plot_loss_overlay(central_losses, fed_losses) # loss comparison between ML and FL
-#plot_acc_overlay(central_val_accs, fed_val_accs) # accuracy comparison between ML and FL
+plot_loss_overlay(central_losses, fed_losses) # loss comparison between ML and FL
+plot_acc_overlay(central_val_accs, fed_val_accs) # accuracy comparison between ML and FL
 plot_client_label_distribution(client_training_loaders) # create a heatmap-style overview per client
