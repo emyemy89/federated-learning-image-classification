@@ -35,8 +35,9 @@ model = CNN()
 NUMBER_OF_CLIENTS = 5
 NUMBER_OF_EPOCHS = 3
 NUMBER_OF_ROUNDS = 3
-DIRICHLET_ALPHA = 0.05
+DIRICHLET_ALPHA = 1
 BATCH_SIZE = 64
+LR = 0.03
 # %%
 # Data Loaders
 client_training_loaders = create_dirichlet_client_loaders(number_of_clients = NUMBER_OF_CLIENTS,
@@ -55,7 +56,8 @@ central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = NUMBE
                                                       train_loader = train_loader,
                                                       val_loader = val_loader,
                                                       test_loader = test_loader,
-                                                      model = model)
+                                                      model = model,
+                                                      lr = 0.03)
 
 # Now we need to aggregate the results with FedAvg
 fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUNDS,
@@ -64,7 +66,9 @@ fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUN
                                               global_model = gl_model,
                                               client_training_loaders = client_training_loaders,
                                               val_loader = val_loader,
-                                              test_loader = test_loader)
+                                              test_loader = test_loader,
+                                              lr = 0.1,
+                                               participation_rate = 1)
 
 # PLOTS
 plot_loss_overlay(central_losses, fed_losses) # loss comparison between ML and FL
