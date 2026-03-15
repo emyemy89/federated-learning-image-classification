@@ -42,6 +42,7 @@ def evaluate_model(dataloader, global_model, is_final, show_confusion):
     global_model.eval()
     correct = 0
     total = 0
+    prev_f1 = 0 # to compute f1 score
     all_true = []
     all_predicted = []
     with torch.no_grad(): # again, to not compute the graph
@@ -57,10 +58,11 @@ def evaluate_model(dataloader, global_model, is_final, show_confusion):
     accuracy = (correct / total)*100
     if(is_final):
         print(f'Accuracy {accuracy}%\n')
-    if (f1_score(all_true, all_predicted, average='macro')<)
-    if(show_confusion):
+    if (f1_score(all_true, all_predicted, average='macro')-prev_f1 < 0.001):
+        stop = True
         generate_confusion_matrix(all_true, all_predicted)
-    return accuracy
+    prev_f1 = f1_score(all_true, all_predicted, average='macro')
+    return accuracy, stop
 
 # function to aggregate weights in FL global model computation at each round
 def aggregate(number_of_samples, client_state_dictionary, global_model):
@@ -120,6 +122,7 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
         print("Average Loss: " + str(round_loss))
         print("Validation Accuracy:")
         round_val_accuracy = evaluate_model(val_loader, global_model, True, False)
+        if
         global_val_accuracies.append(round_val_accuracy)
     # compute accuracy
     print("Final Model Accuracy: ")
