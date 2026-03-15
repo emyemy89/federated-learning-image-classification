@@ -1,11 +1,9 @@
-from collections import Counter
 import copy
 import torch
 import time
 import torch.nn as nn
 import torch.optim as optim
-import numpy as np
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report, f1_score
+from sklearn.metrics import confusion_matrix, f1_score
 
 from src.plotting import plot_loss, plot_acc, plot_cm
 
@@ -62,7 +60,7 @@ def evaluate_model(dataloader, global_model, prev_f1):
     accuracy = (correct / total)*100
     current_f1 = f1_score(all_true, all_predicted, average='macro')
     print(f"F1 difference thingy is {current_f1- prev_f1}\n")
-    if (abs(current_f1-prev_f1) < 0.0001):
+    if abs(current_f1-prev_f1) < 0.0001:
         stop = True
         generate_confusion_matrix(all_true, all_predicted)
         print(f'Accuracy {accuracy}%\n')
@@ -104,7 +102,6 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
     global_val_accuracies = []  # global model val accuracy per round
     start_time = time.time()
     prev_f1 = 0
-    stop = False
     for round in range(number_of_rounds):
         print("---------------------------------")
         print(f"Round {round + 1}:\n")
