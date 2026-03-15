@@ -57,6 +57,7 @@ def evaluate_model(dataloader, global_model, is_final, show_confusion):
     accuracy = (correct / total)*100
     if(is_final):
         print(f'Accuracy {accuracy}%\n')
+    if (f1_score(all_true, all_predicted, average='macro')<)
     if(show_confusion):
         generate_confusion_matrix(all_true, all_predicted)
     return accuracy
@@ -137,7 +138,3 @@ def generate_confusion_matrix(true, predicted):
     plot_cm(cm)
     return cm
 
-# Generates an F1 score for a confusion matrix
-def compute_f1_score(true, predicted):
-    f1 = f1_score(true, predicted)
-    return f1
