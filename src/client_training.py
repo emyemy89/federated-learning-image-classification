@@ -15,6 +15,7 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
     optimiser = optim.SGD(model.parameters(), lr = lr)
     model.train()
     losses, val_accuracies = [], []
+    prev_f1 = 0
     for epoch in range (number_of_epochs):
         running_loss = 0.0
         for images, labels in train_loader:
@@ -29,7 +30,11 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
         avg_loss = running_loss / len(train_loader)
         losses.append(avg_loss) 
         if val_loader is not None:
-            val_accuracy = evaluate_model(val_loader, model, False, False)
+            val_accuracy, stop, current_f1 = evaluate_model(val_loader, model, prev_f1)
+            prev_f1 = current_f1
+            if stop:
+                print(f"Convergence reached at epoch {epoch + 1}. Stopping training.")
+                break
             val_accuracies.append(val_accuracy)
             print(f"Epoch {epoch+1}/{number_of_epochs}, Loss: {avg_loss:.4f}, Val Acc: {val_accuracy:.4f}")
         else:
@@ -38,11 +43,11 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
 
 
 # function for calculating accuracy
-def evaluate_model(dataloader, global_model, is_final, show_confusion):
+def evaluate_model(dataloader, global_model, prev_f1):
     global_model.eval()
     correct = 0
     total = 0
-    prev_f1 = 0 # to compute f1 score
+    stop = False
     all_true = []
     all_predicted = []
     with torch.no_grad(): # again, to not compute the graph
@@ -52,17 +57,16 @@ def evaluate_model(dataloader, global_model, is_final, show_confusion):
                                                  # by using '_' we tell it to return only the indices and discard the val
             total += labels.size(0) # add batch size to keep track of processed batches
             correct += (predicted == labels).sum().item()
-            if show_confusion:
-                all_true.extend(labels.cpu().numpy()) # we need to convert labels to numpy arrays (from tensors) but they need to be on the CPU first (GPU doesn't allow)
-                all_predicted.extend(predicted.cpu().numpy())
+            all_true.extend(labels.cpu().numpy()) # we need to convert labels to numpy arrays (from tensors) but they need to be on the CPU first (GPU doesn't allow)
+            all_predicted.extend(predicted.cpu().numpy())
     accuracy = (correct / total)*100
-    if(is_final):
-        print(f'Accuracy {accuracy}%\n')
-    if (f1_score(all_true, all_predicted, average='macro')-prev_f1 < 0.001):
+    current_f1 = f1_score(all_true, all_predicted, average='macro')
+    print(f"F1 difference thingy is {current_f1- prev_f1}\n")
+    if (current_f1-prev_f1 < 0.001):
         stop = True
         generate_confusion_matrix(all_true, all_predicted)
-    prev_f1 = f1_score(all_true, all_predicted, average='macro')
-    return accuracy, stop
+        print(f'Accuracy {accuracy}%\n')
+    return accuracy, stop, current_f1
 
 # function to aggregate weights in FL global model computation at each round
 def aggregate(number_of_samples, client_state_dictionary, global_model):
@@ -85,10 +89,10 @@ def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, 
     start_time = time.time()
     # do training
     _, losses, val_accuracies = train_local( model, train_loader, val_loader, number_of_epochs, 0.01)
-    test_accuracy = evaluate_model(test_loader, model, True, False)
+    #test_accuracy, _, _ = evaluate_model(test_loader, model, True, False)
     end_time = time.time()
     print(f"Total training time: {end_time-start_time:.2f} seconds")
-    print(f"Test Accuracy: {test_accuracy:.2f}%")
+    #print(f"Test Accuracy: {test_accuracy:.2f}%")
     plot_loss( losses)
     plot_acc( val_accuracies)
     return losses, val_accuracies
@@ -121,12 +125,11 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
 
         print("Average Loss: " + str(round_loss))
         print("Validation Accuracy:")
-        round_val_accuracy = evaluate_model(val_loader, global_model, True, False)
-        if
+        round_val_accuracy, _, _ = evaluate_model(val_loader, global_model, True, False)
         global_val_accuracies.append(round_val_accuracy)
     # compute accuracy
     print("Final Model Accuracy: ")
-    evaluate_model(test_loader, global_model, True, True)
+    evaluate_model(test_loader, global_model, True, True, 0)
     end_time = time.time()
     print(f"Total training time: {end_time-start_time:.2f} seconds")
 
