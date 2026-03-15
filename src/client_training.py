@@ -5,8 +5,7 @@ import time
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
-
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report, f1_score
 
 from src.plotting import plot_loss, plot_acc, plot_cm
 
@@ -131,6 +130,14 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
     plot_acc(global_val_accuracies)
     return global_losses, global_val_accuracies
 
+
+# Generates a confusion matrix
 def generate_confusion_matrix(true, predicted):
     cm = confusion_matrix(true, predicted)
     plot_cm(cm)
+    return cm
+
+# Generates an F1 score for a confusion matrix
+def compute_f1_score(true, predicted):
+    f1 = f1_score(true, predicted)
+    return f1
