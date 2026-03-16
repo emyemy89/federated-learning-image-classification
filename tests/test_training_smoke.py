@@ -91,6 +91,8 @@ class TrainingSmokeTests(unittest.TestCase):
             client_training_loaders=client_loaders,
             val_loader=val_loader,
             test_loader=test_loader,
+            lr = 0.1,
+            participation_rate= 0.8
         )
 
         self.assertEqual(len(losses), 1)
