@@ -16,6 +16,7 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
     model.train()
     losses, val_accuracies = [], []
     prev_f1 = 0
+    prev_accuracy = 0
     for epoch in range (number_of_epochs):
         running_loss = 0.0
         for images, labels in train_loader:
@@ -32,6 +33,7 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
         if val_loader is not None:
             val_accuracy, stop, current_f1 = evaluate_model(val_loader, model, prev_f1)
             prev_f1 = current_f1
+            prev_accuracy = val_accuracy
             if stop:
                 print(f"Convergence reached at epoch {epoch + 1}. Stopping training.")
                 break
@@ -43,7 +45,7 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
 
 
 # function for calculating accuracy
-def evaluate_model(dataloader, global_model, prev_f1):
+def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy):
     global_model.eval()
     correct = 0
     total = 0
@@ -62,7 +64,7 @@ def evaluate_model(dataloader, global_model, prev_f1):
     accuracy = (correct / total)*100
     current_f1 = f1_score(all_true, all_predicted, average='macro')
     print(f"F1 difference thingy is {current_f1- prev_f1}\n")
-    if abs(current_f1-prev_f1) < 0.0001:
+    if (abs(current_f1-prev_f1) < 0.0001 or abs(accuracy-prev_accuracy) > 0.001):
         stop = True
         generate_confusion_matrix(all_true, all_predicted)
         print(f'Accuracy {accuracy}%\n')
@@ -88,12 +90,12 @@ def aggregate(number_of_samples, client_state_dictionary, global_model):
 def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, model, lr):
     start_time = time.time()
     # do training
-    _, losses, val_accuracies = train_local( model, train_loader, val_loader, number_of_epochs, 0.01)
+    _, losses, val_accuracies = train_local( model, train_loader, val_loader, number_of_epochs, lr)
     end_time = time.time()
     # if no convergence
-    test_accuracy, _, _ = evaluate_model(test_loader, model, 0)
+    test_accuracy, _, _ = evaluate_model(test_loader, model, 0, 0)
     print(f"Total training time: {end_time-start_time:.2f} seconds")
-    print(f"Test Accuracy: {test_accuracy:.2f}%")
+    print(f"No convergence, but test Accuracy: {test_accuracy:.2f}%")
     plot_loss( losses)
     plot_acc( val_accuracies)
     return losses, val_accuracies
