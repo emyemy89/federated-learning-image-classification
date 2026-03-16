@@ -92,7 +92,8 @@ class TrainingSmokeTests(unittest.TestCase):
             val_loader=val_loader,
             test_loader=test_loader,
             lr = 0.1,
-            participation_rate= 0.8
+            participation_rate= 0.8,
+            convergence="acc",
         )
 
         self.assertEqual(len(losses), 1)
@@ -125,11 +126,11 @@ class TrainingSmokeTests(unittest.TestCase):
         model = ConstantModel(num_classes=10)
 
         # First call establishes a baseline F1
-        acc1, stop1, f1_1 = evaluate_model(loader, model, prev_f1=0.0, prev_accuracy=0)
+        acc1, stop1, f1_1 = evaluate_model(loader, model, prev_f1=0.0, prev_accuracy=0, convergence="acc")
         self.assertFalse(stop1)
 
         # Second call with nearly identical F1 should trigger convergence
-        acc2, stop2, f1_2 = evaluate_model(loader, model, prev_f1=f1_1, prev_accuracy=acc1)
+        acc2, stop2, f1_2 = evaluate_model(loader, model, prev_f1=f1_1, prev_accuracy=acc1, convergence="acc")
         self.assertEqual(acc1, acc2)
         self.assertAlmostEqual(f1_1, f1_2, places=5)
         self.assertTrue(stop2)
