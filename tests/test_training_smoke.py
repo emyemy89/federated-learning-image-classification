@@ -2,10 +2,10 @@ import unittest
 
 import torch
 from torchvision import datasets, transforms
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader, Subset, TensorDataset
 
 from src.model_implementation import CNN, MLP
-from src.client_training import train_local, run_fl
+from src.client_training import train_local, run_fl, evaluate_model
 from src.data_loading import create_dirichlet_client_loaders
 
 
@@ -100,6 +100,39 @@ class TrainingSmokeTests(unittest.TestCase):
         self.assertGreaterEqual(losses[0], 0.0)
         self.assertGreaterEqual(val_accs[0], 0.0)
         self.assertLessEqual(val_accs[0], 100.0)
+
+    def test_f1_convergence_triggers_stop_flag(self):
+        """
+        Evaluate_model: ensures F1-based convergence flag behaves as expected.
+        """
+
+        class ConstantModel(torch.nn.Module):
+            def __init__(self, num_classes: int = 10):
+                super().__init__()
+                self.logits = torch.nn.Parameter(torch.zeros(num_classes), requires_grad=False)
+
+            def forward(self, x):
+                # broadcast fixed logits to batch size
+                batch_size = x.shape[0]
+                return self.logits.unsqueeze(0).expand(batch_size, -1)
+
+        # Small synthetic dataset: all zeros images, fixed labels
+        inputs = torch.zeros(32, 1, 28, 28)
+        labels = torch.zeros(32, dtype=torch.long)
+        dataset = TensorDataset(inputs, labels)
+        loader = DataLoader(dataset, batch_size=16, shuffle=False)
+
+        model = ConstantModel(num_classes=10)
+
+        # First call establishes a baseline F1
+        acc1, stop1, f1_1 = evaluate_model(loader, model, prev_f1=0.0)
+        self.assertFalse(stop1)
+
+        # Second call with nearly identical F1 should trigger convergence
+        acc2, stop2, f1_2 = evaluate_model(loader, model, prev_f1=f1_1)
+        self.assertEqual(acc1, acc2)
+        self.assertAlmostEqual(f1_1, f1_2, places=5)
+        self.assertTrue(stop2)
 
 
 if __name__ == "__main__":
