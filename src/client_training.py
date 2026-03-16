@@ -31,7 +31,7 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
         avg_loss = running_loss / len(train_loader)
         losses.append(avg_loss) 
         if val_loader is not None:
-            val_accuracy, stop, current_f1 = evaluate_model(val_loader, model, prev_f1)
+            val_accuracy, stop, current_f1 = evaluate_model(val_loader, model, prev_f1, prev_accuracy)
             prev_f1 = current_f1
             prev_accuracy = val_accuracy
             if stop:
@@ -63,8 +63,9 @@ def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy):
             all_predicted.extend(predicted.cpu().numpy())
     accuracy = (correct / total)*100
     current_f1 = f1_score(all_true, all_predicted, average='macro')
-    print(f"F1 difference thingy is {current_f1- prev_f1}\n")
-    if (abs(current_f1-prev_f1) < 0.0001 or abs(accuracy-prev_accuracy) > 0.001):
+    # print(f"F1 difference thingy is {current_f1- prev_f1}\n")
+    #if (abs(current_f1-prev_f1) < 0.0001 or abs(accuracy-prev_accuracy) < 0.001):
+    if (abs(accuracy - prev_accuracy) < 0.01):
         stop = True
         generate_confusion_matrix(all_true, all_predicted)
         print(f'Accuracy {accuracy}%\n')
