@@ -29,8 +29,8 @@ mnist_trainset, mnist_valset = random_split(full_mnist_trainset, [train_size, va
 mnist_testset = datasets.MNIST(root = './data', train = False, download = True, transform = transform)
 # %%
 # the model: CNN or MLP
-gl_model = CNN()
-model = CNN()
+gl_model = MLP()
+model = MLP()
 
 NUMBER_OF_CLIENTS = 5
 NUMBER_OF_EPOCHS = 3
