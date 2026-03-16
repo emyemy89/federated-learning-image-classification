@@ -64,8 +64,8 @@ def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy):
     accuracy = (correct / total)*100
     current_f1 = f1_score(all_true, all_predicted, average='macro')
     # print(f"F1 difference thingy is {current_f1- prev_f1}\n")
-    #if (abs(current_f1-prev_f1) < 0.0001 or abs(accuracy-prev_accuracy) < 0.001):
-    if (abs(accuracy - prev_accuracy) < 0.01):
+    #if (abs(current_f1-prev_f1) < 0.0001):
+    if (abs(accuracy - prev_accuracy) < 0.005):
         stop = True
         generate_confusion_matrix(all_true, all_predicted)
         print(f'Accuracy {accuracy}%\n')
@@ -107,6 +107,7 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
     global_val_accuracies = []  # global model val accuracy per round
     start_time = time.time()
     prev_f1 = 0
+    prev_accuracy = 0
     for round in range(number_of_rounds):
         print("---------------------------------")
         print(f"Round {round + 1}:\n")
@@ -132,16 +133,17 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
         global_model = aggregate(number_of_samples, client_state_dictionary, global_model)
 
         print("Average Loss: " + str(round_loss))
-        round_val_accuracy, stop, current_f1 = evaluate_model(val_loader, global_model, prev_f1)
+        round_val_accuracy, stop, current_f1 = evaluate_model(val_loader, global_model, prev_f1, prev_accuracy)
         print(f"Validation Accuracy: {round_val_accuracy:.2f}")
         if stop:
             print(f"Convergence reached at FL round {round + 1}. Stopping training.")
             break
         prev_f1 = current_f1
+        prev_accuracy = round_val_accuracy
         global_val_accuracies.append(round_val_accuracy)
     # compute accuracy if no convergence
     print("Not converged, but Final Model Accuracy: ")
-    evaluate_model(test_loader, global_model, 0)
+    evaluate_model(test_loader, global_model, 0,0)
     end_time = time.time()
     print(f"Total training time: {end_time-start_time:.2f} seconds")
 

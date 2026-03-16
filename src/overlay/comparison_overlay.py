@@ -60,7 +60,6 @@ central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = NUMBE
                                                       lr = 0.03)
 
 # Now we need to aggregate the results with FedAvg
-"""""
 fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUNDS,
                                               number_of_clients = NUMBER_OF_CLIENTS,
                                               epochs = NUMBER_OF_EPOCHS,
@@ -68,11 +67,10 @@ fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUN
                                               client_training_loaders = client_training_loaders,
                                               val_loader = val_loader,
                                               test_loader = test_loader,
-                                              lr = 0.1,
+                                              lr = 0.05,
                                                participation_rate = 1)
 
 # PLOTS
 plot_loss_overlay(central_losses, fed_losses) # loss comparison between ML and FL
 plot_acc_overlay(central_val_accs, fed_val_accs) # accuracy comparison between ML and FL
 plot_client_label_distribution(client_training_loaders) # create a heatmap-style overview per client
-"""
