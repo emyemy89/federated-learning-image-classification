@@ -29,8 +29,8 @@ mnist_trainset, mnist_valset = random_split(full_mnist_trainset, [train_size, va
 mnist_testset = datasets.MNIST(root = './data', train = False, download = True, transform = transform)
 # %%
 # the model: CNN or MLP
-gl_model = CNN()
-model = CNN()
+gl_model = MLP()
+model = MLP()
 
 NUMBER_OF_CLIENTS = 5
 NUMBER_OF_EPOCHS = 3
@@ -57,7 +57,8 @@ central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = NUMBE
                                                       val_loader = val_loader,
                                                       test_loader = test_loader,
                                                       model = model,
-                                                      lr = 0.01)
+                                                      lr = 0.03,
+                                                      convergence= "f1")
 
 # Now we need to aggregate the results with FedAvg
 fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUNDS,
@@ -68,7 +69,9 @@ fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUN
                                               val_loader = val_loader,
                                               test_loader = test_loader,
                                               lr = 0.05,
-                                               participation_rate = 1)
+                                              participation_rate = 1,
+                                              convergence = "acc")
+
 
 # PLOTS
 plot_loss_overlay(central_losses, fed_losses) # loss comparison between ML and FL

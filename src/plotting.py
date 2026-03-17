@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 
 def plot_loss( losses):
     epochs = range(1, len(losses) + 1)
@@ -106,4 +107,19 @@ def plot_client_label_distribution(client_training_loaders):
 
     plt.tight_layout()
     plt.savefig("client_label_distribution.png", dpi=150)
+    plt.show()
+
+def plot_cm(cm):
+    plt.figure()
+    sns.heatmap(
+        cm,
+        annot = True,
+        fmt = "d",  # force integer formatting
+        cmap = "Blues",
+        annot_kws = {"size": 10}  # control number size
+    )
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.title("Confusion Matrix")
+    plt.savefig("confusion_matrix.png", dpi=150)
     plt.show()

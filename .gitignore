@@ -4,6 +4,11 @@
 
 **/__pycache__/
 
+.vscode/
+.idea/
+.venv/
+.DS_Store
+
 # Generated plots
 src/Federated_Learning/accuracy.png
 src/Federated_Learning/loss.png
