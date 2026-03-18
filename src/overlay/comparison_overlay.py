@@ -32,7 +32,7 @@ mnist_testset = datasets.MNIST(root = './data', train = False, download = True, 
 gl_model = MLP()
 model = MLP()
 
-NUMBER_OF_CLIENTS = 5
+NUMBER_OF_CLIENTS = [5, 10]
 NUMBER_OF_EPOCHS = 3
 NUMBER_OF_ROUNDS = 10
 DIRICHLET_ALPHA = 1
@@ -40,9 +40,6 @@ BATCH_SIZE = 64
 LR = 0.03
 # %%
 # Data Loaders
-client_training_loaders = create_dirichlet_client_loaders(number_of_clients = NUMBER_OF_CLIENTS,
-                                                          mnist_trainset = full_mnist_trainset,
-                                                          alpha = DIRICHLET_ALPHA)
 train_loader = DataLoader(full_mnist_trainset, batch_size = BATCH_SIZE, shuffle = True)
 
 # this will show what digits each client has (console)
@@ -61,16 +58,22 @@ central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = NUMBE
                                                       convergence= "f1")
 
 # Now we need to aggregate the results with FedAvg
-fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUNDS,
-                                              number_of_clients = NUMBER_OF_CLIENTS,
-                                              epochs = NUMBER_OF_EPOCHS,
-                                              global_model = gl_model,
-                                              client_training_loaders = client_training_loaders,
-                                              val_loader = val_loader,
-                                              test_loader = test_loader,
-                                              lr = 0.05,
-                                              participation_rate = 1,
-                                              convergence = "acc")
+for num_clients in NUMBER_OF_CLIENTS:
+    # Data Loader
+    client_training_loaders = create_dirichlet_client_loaders(number_of_clients=NUMBER_OF_CLIENTS,
+                                                              mnist_trainset=full_mnist_trainset,
+                                                              alpha=DIRICHLET_ALPHA)
+
+    fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUNDS,
+                                                  number_of_clients = num_clients,
+                                                  epochs = NUMBER_OF_EPOCHS,
+                                                  global_model = gl_model,
+                                                  client_training_loaders = client_training_loaders,
+                                                  val_loader = val_loader,
+                                                  test_loader = test_loader,
+                                                  lr = 0.05,
+                                                  participation_rate = 1,
+                                                  convergence = "acc")
 
 
 # PLOTS
