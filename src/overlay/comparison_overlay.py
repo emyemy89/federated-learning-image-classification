@@ -22,10 +22,10 @@ from src.plotting import (
 transform = transforms.ToTensor()
 
 full_mnist_trainset = datasets.MNIST(root = './data', train = True, download = True, transform = transform)
-train_size = int(0.7 * len(full_mnist_trainset))
-val_size = len(full_mnist_trainset) - train_size
+# train_size = int(0.7 * len(full_mnist_trainset))
+# val_size = len(full_mnist_trainset) - train_size
+# mnist_trainset, mnist_valset = random_split(full_mnist_trainset, [train_size, val_size])
 
-mnist_trainset, mnist_valset = random_split(full_mnist_trainset, [train_size, val_size])
 mnist_testset = datasets.MNIST(root = './data', train = False, download = True, transform = transform)
 # %%
 # the model: CNN or MLP
@@ -41,14 +41,14 @@ LR = 0.03
 # %%
 # Data Loaders
 client_training_loaders = create_dirichlet_client_loaders(number_of_clients = NUMBER_OF_CLIENTS,
-                                                          mnist_trainset = mnist_trainset,
+                                                          mnist_trainset = full_mnist_trainset,
                                                           alpha = DIRICHLET_ALPHA)
-train_loader = DataLoader(mnist_trainset, batch_size = BATCH_SIZE, shuffle = True)
+train_loader = DataLoader(full_mnist_trainset, batch_size = BATCH_SIZE, shuffle = True)
 
 # this will show what digits each client has (console)
 # debug_non_iid_split(client_training_loaders)
 
-val_loader = DataLoader(mnist_valset, batch_size = BATCH_SIZE, shuffle = False)
+val_loader = DataLoader(mnist_testset, batch_size = BATCH_SIZE, shuffle = False)
 test_loader = DataLoader(mnist_testset, batch_size = BATCH_SIZE, shuffle=False)
 
 # %%
