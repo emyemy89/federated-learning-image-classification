@@ -29,12 +29,11 @@ full_mnist_trainset = datasets.MNIST(root = './data', train = True, download = T
 mnist_testset = datasets.MNIST(root = './data', train = False, download = True, transform = transform)
 # %%
 # the model: CNN or MLP
-gl_model = MLP()
 model = MLP()
 
-NUMBER_OF_CLIENTS = [5, 10]
+NUMBER_OF_CLIENTS = [2, 4, 5]
 NUMBER_OF_EPOCHS = 3
-NUMBER_OF_ROUNDS = 10
+NUMBER_OF_ROUNDS = 100
 DIRICHLET_ALPHA = 1
 BATCH_SIZE = 64
 LR = 0.03
@@ -55,12 +54,16 @@ central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = NUMBE
                                                       test_loader = test_loader,
                                                       model = model,
                                                       lr = 0.03,
-                                                      convergence= "f1")
+                                                      convergence= "acc")
 
 # Now we need to aggregate the results with FedAvg
+fed_results = {}
+
 for num_clients in NUMBER_OF_CLIENTS:
+    # Model
+    gl_model = MLP()
     # Data Loader
-    client_training_loaders = create_dirichlet_client_loaders(number_of_clients=NUMBER_OF_CLIENTS,
+    client_training_loaders = create_dirichlet_client_loaders(number_of_clients=num_clients,
                                                               mnist_trainset=full_mnist_trainset,
                                                               alpha=DIRICHLET_ALPHA)
 
@@ -74,9 +77,13 @@ for num_clients in NUMBER_OF_CLIENTS:
                                                   lr = 0.05,
                                                   participation_rate = 1,
                                                   convergence = "acc")
+    fed_results[num_clients] = {
+        "losses": fed_losses,
+        "accs": fed_val_accs
+    }
 
 
 # PLOTS
-plot_loss_overlay(central_losses, fed_losses) # loss comparison between ML and FL
-plot_acc_overlay(central_val_accs, fed_val_accs) # accuracy comparison between ML and FL
+plot_loss_overlay(central_losses, fed_results) # loss comparison between ML and FL
+plot_acc_overlay(central_val_accs, fed_results) # accuracy comparison between ML and FL
 plot_client_label_distribution(client_training_loaders) # create a heatmap-style overview per client

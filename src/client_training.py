@@ -65,7 +65,7 @@ def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy, convergence
     current_f1 = f1_score(all_true, all_predicted, average='macro')
     # print(f"F1 difference thingy is {current_f1- prev_f1}\n")
     if (convergence == "f1" and abs(current_f1 - prev_f1) < 0.0001) or \
-   (convergence == "acc" and abs(accuracy - prev_accuracy) < 0.9):
+   (convergence == "acc" and abs(accuracy - prev_accuracy) < 0.1):
         stop = True
         generate_confusion_matrix(all_true, all_predicted)
         print(f'Accuracy {accuracy}%\n')
