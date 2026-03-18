@@ -33,8 +33,8 @@ gl_model = MLP()
 model = MLP()
 
 NUMBER_OF_CLIENTS = 5
-NUMBER_OF_EPOCHS = 2
-NUMBER_OF_ROUNDS = 100
+NUMBER_OF_EPOCHS = 3
+NUMBER_OF_ROUNDS = 10
 DIRICHLET_ALPHA = 1
 BATCH_SIZE = 64
 LR = 0.03
@@ -71,6 +71,7 @@ fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUN
                                               lr = 0.05,
                                               participation_rate = 1,
                                               convergence = "acc")
+
 
 # PLOTS
 plot_loss_overlay(central_losses, fed_losses) # loss comparison between ML and FL
