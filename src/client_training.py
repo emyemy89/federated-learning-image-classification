@@ -18,7 +18,7 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
     prev_f1 = 0
     prev_accuracy = 0
     num_improve_rounds = 0
-    patience = 4
+    patience = 3
     for epoch in range (number_of_epochs):
         running_loss = 0.0
         for images, labels in train_loader:
@@ -117,7 +117,7 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
     prev_f1 = 0
     prev_accuracy = 0
     num_improve_rounds = 0
-    patience = 4
+    patience = 3
     for round in range(number_of_rounds):
         print("---------------------------------")
         print(f"Round {round + 1}:\n")
