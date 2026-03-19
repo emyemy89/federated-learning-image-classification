@@ -17,6 +17,8 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
     losses, val_accuracies = [], []
     prev_f1 = 0
     prev_accuracy = 0
+    num_improve_rounds = 0
+    patience = 3
     for epoch in range (number_of_epochs):
         running_loss = 0.0
         for images, labels in train_loader:
@@ -31,11 +33,16 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
         avg_loss = running_loss / len(train_loader)
         losses.append(avg_loss) 
         if val_loader is not None:
-            val_accuracy, stop, current_f1 = evaluate_model(val_loader, model, prev_f1, prev_accuracy, convergence = convergence)
+            val_accuracy, small_change, current_f1, all_true, all_predicted = evaluate_model(val_loader, model, prev_f1, prev_accuracy, convergence = convergence)
             prev_f1 = current_f1
             prev_accuracy = val_accuracy
-            if stop:
-                print(f"Convergence reached at epoch {epoch + 1}. Stopping training.")
+            if small_change:
+                num_improve_rounds += 1
+            else:
+                num_improve_rounds = 0
+            if num_improve_rounds >= patience:
+                print(f"Convergence reached at FL round {epoch + 1}. Stopping training.")
+                generate_confusion_matrix(all_true, all_predicted)
                 break
             val_accuracies.append(val_accuracy)
             print(f"Epoch {epoch+1}/{number_of_epochs}, Loss: {avg_loss:.4f}, Val Acc: {val_accuracy:.4f}")
@@ -49,7 +56,8 @@ def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy, convergence
     global_model.eval()
     correct = 0
     total = 0
-    stop = False
+    #stop = False
+    small_change = False
     all_true = []
     all_predicted = []
     with torch.no_grad(): # again, to not compute the graph
@@ -65,11 +73,11 @@ def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy, convergence
     current_f1 = f1_score(all_true, all_predicted, average='macro')
     # print(f"F1 difference thingy is {current_f1- prev_f1}\n")
     if (convergence == "f1" and abs(current_f1 - prev_f1) < 0.0001) or \
-   (convergence == "acc" and abs(accuracy - prev_accuracy) < 0.1):
-        stop = True
-        generate_confusion_matrix(all_true, all_predicted)
+   (convergence == "acc" and abs(accuracy - prev_accuracy) < 0.05):
+        small_change = True
+        #generate_confusion_matrix(all_true, all_predicted)
         print(f'Accuracy {accuracy}%\n')
-    return accuracy, stop, current_f1
+    return accuracy, small_change, current_f1, all_true, all_predicted
 
 # function to aggregate weights in FL global model computation at each round
 def aggregate(number_of_samples, client_state_dictionary, global_model):
@@ -94,7 +102,7 @@ def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, 
     _, losses, val_accuracies = train_local( model, train_loader, val_loader, number_of_epochs, lr, convergence)
     end_time = time.time()
     # if no convergence
-    test_accuracy, _, _ = evaluate_model(test_loader, model, 0, 0, None)
+    test_accuracy, _, _, _, _ = evaluate_model(test_loader, model, 0, 0, None)
     print(f"Total training time: {end_time-start_time:.2f} seconds")
     print(f"No convergence, but test Accuracy: {test_accuracy:.2f}%")
     plot_loss( losses)
@@ -108,6 +116,8 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
     start_time = time.time()
     prev_f1 = 0
     prev_accuracy = 0
+    num_improve_rounds = 0
+    patience = 3
     for round in range(number_of_rounds):
         print("---------------------------------")
         print(f"Round {round + 1}:\n")
@@ -133,10 +143,15 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
         global_model = aggregate(number_of_samples, client_state_dictionary, global_model)
 
         print("Average Loss: " + str(round_loss))
-        round_val_accuracy, stop, current_f1 = evaluate_model(val_loader, global_model, prev_f1, prev_accuracy, convergence)
+        round_val_accuracy, small_change, current_f1, all_true, all_predicted = evaluate_model(val_loader, global_model, prev_f1, prev_accuracy, convergence)
         print(f"Validation Accuracy: {round_val_accuracy:.2f}")
-        if stop:
+        if small_change:
+            num_improve_rounds += 1
+        else:
+            num_improve_rounds = 0
+        if num_improve_rounds >= patience:
             print(f"Convergence reached at FL round {round + 1}. Stopping training.")
+            generate_confusion_matrix(all_true, all_predicted)  # optional move here
             break
         prev_f1 = current_f1
         prev_accuracy = round_val_accuracy

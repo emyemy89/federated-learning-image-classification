@@ -29,12 +29,12 @@ full_mnist_trainset = datasets.MNIST(root = './data', train = True, download = T
 mnist_testset = datasets.MNIST(root = './data', train = False, download = True, transform = transform)
 # %%
 # the model: CNN or MLP
-model = MLP()
+model = CNN()
 
-NUMBER_OF_CLIENTS = [2, 4, 5]
+NUMBER_OF_CLIENTS = [2, 5, 10, 20, 50]
 NUMBER_OF_EPOCHS = 3
-NUMBER_OF_ROUNDS = 100
-DIRICHLET_ALPHA = 1
+NUMBER_OF_ROUNDS = 10000
+DIRICHLET_ALPHA = 10
 BATCH_SIZE = 64
 LR = 0.03
 # %%
@@ -53,7 +53,7 @@ central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = NUMBE
                                                       val_loader = val_loader,
                                                       test_loader = test_loader,
                                                       model = model,
-                                                      lr = 0.03,
+                                                      lr = 0.01,
                                                       convergence= "acc")
 
 # Now we need to aggregate the results with FedAvg
@@ -61,7 +61,7 @@ fed_results = {}
 
 for num_clients in NUMBER_OF_CLIENTS:
     # Model
-    gl_model = MLP()
+    gl_model = CNN()
     # Data Loader
     client_training_loaders = create_dirichlet_client_loaders(number_of_clients=num_clients,
                                                               mnist_trainset=full_mnist_trainset,
