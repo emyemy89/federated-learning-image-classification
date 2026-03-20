@@ -126,11 +126,11 @@ class TrainingSmokeTests(unittest.TestCase):
         model = ConstantModel(num_classes=10)
 
         # First call establishes a baseline F1
-        acc1, stop1, f1_1 = evaluate_model(loader, model, prev_f1=0.0, prev_accuracy=0, convergence="acc")
+        acc1, stop1, f1_1, all_true, all_predicted = evaluate_model(loader, model, prev_f1=0.0, prev_accuracy=0, convergence="acc")
         self.assertFalse(stop1)
 
         # Second call with nearly identical F1 should trigger convergence
-        acc2, stop2, f1_2 = evaluate_model(loader, model, prev_f1=f1_1, prev_accuracy=acc1, convergence="acc")
+        acc2, stop2, f1_2, all_true, all_predicted = evaluate_model(loader, model, prev_f1=f1_1, prev_accuracy=acc1, convergence="acc")
         self.assertEqual(acc1, acc2)
         self.assertAlmostEqual(f1_1, f1_2, places=5)
         self.assertTrue(stop2)
