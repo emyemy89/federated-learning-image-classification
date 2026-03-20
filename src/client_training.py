@@ -8,6 +8,7 @@ import torch.optim as optim
 from sklearn.metrics import confusion_matrix, f1_score
 
 from src.plotting import plot_loss, plot_acc, plot_cm
+device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
 # function for local training in FL settings
 def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr = 0.1, convergence = None):
@@ -19,9 +20,12 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
     prev_accuracy = 0
     num_improve_rounds = 0
     patience = 4
+    model.to(device)
     for epoch in range (number_of_epochs):
         running_loss = 0.0
         for images, labels in train_loader:
+            images = images.to(device)
+            labels = labels.to(device)
             # forward pass
             outputs = model(images)
             loss = criterion(outputs, labels)
@@ -60,8 +64,11 @@ def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy, convergence
     small_change = False
     all_true = []
     all_predicted = []
+    global_model.to(device)
     with torch.no_grad(): # again, to not compute the graph
         for images, labels in dataloader:
+            images = images.to(device)
+            labels = labels.to(device)
             outputs = global_model(images)
             _, predicted = torch.max(outputs, 1) # the function returns 2 things: the highest val & indices of the highest val
                                                  # by using '_' we tell it to return only the indices and discard the val
@@ -98,6 +105,7 @@ def aggregate(number_of_samples, client_state_dictionary, global_model):
 # helper function for running ML algorithms
 def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, model, lr, convergence):
     start_time = time.time()
+    model = model.to(device)
     # do training
     _, losses, val_accuracies = train_local( model, train_loader, val_loader, number_of_epochs, lr, convergence)
     end_time = time.time()
@@ -130,7 +138,7 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
         # loop over all clients
         for client in selected_clients:
             print(f"Client{client + 1}:")
-            local_model = copy.deepcopy(global_model)  # copy global model locally
+            local_model = copy.deepcopy(global_model).to(device)  # copy global model locally
             weights, losses, _ = train_local(model=local_model, train_loader=client_training_loaders[client],
                                              number_of_epochs=epochs, lr=lr, convergence = convergence)  # train it
             client_state_dictionary.append(weights)  # store the weights

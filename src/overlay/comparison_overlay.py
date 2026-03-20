@@ -1,6 +1,7 @@
 # %%
 import sys
 import os
+import torch
 sys.path.append(os.path.abspath("../.."))
 print(sys.executable)
 
@@ -29,7 +30,8 @@ full_mnist_trainset = datasets.MNIST(root = './data', train = True, download = T
 mnist_testset = datasets.MNIST(root = './data', train = False, download = True, transform = transform)
 # %%
 # the model: CNN or MLP
-model = CNN()
+device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+model = CNN().to(device)
 
 NUMBER_OF_CLIENTS = [2, 5, 10, 20, 50]
 NUMBER_OF_EPOCHS = 3
@@ -61,7 +63,7 @@ fed_results = {}
 
 for num_clients in NUMBER_OF_CLIENTS:
     # Model
-    gl_model = CNN()
+    gl_model = CNN().to(device)
     # Data Loader
     client_training_loaders = create_dirichlet_client_loaders(number_of_clients=num_clients,
                                                               mnist_trainset=full_mnist_trainset,
