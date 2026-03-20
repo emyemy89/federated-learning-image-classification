@@ -11,7 +11,7 @@ def plot_loss( losses):
     plt.title('Training Loss per Epoch')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.xticks(epochs)
+    plt.xticks(get_sparse_ticks(len(losses)))
     plt.tight_layout()
     plt.savefig('loss.png')
     plt.show()
@@ -26,7 +26,7 @@ def plot_acc( val_accuracies):
     plt.title('Validation Accuracy per Epoch')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy (%)')
-    plt.xticks(epochs)
+    plt.xticks(get_sparse_ticks(len(val_accuracies)))
     plt.tight_layout()
     plt.savefig('accuracy.png')
     plt.show()
@@ -34,7 +34,7 @@ def plot_acc( val_accuracies):
 
 
 
-def plot_loss_overlay(central_losses, fed_losses):
+def plot_loss_overlay(central_losses, fed_results):
     """
     Overlay loss curves for centralized vs federated training.
     central_losses: list of per-epoch losses from centralized training
@@ -43,19 +43,29 @@ def plot_loss_overlay(central_losses, fed_losses):
     fig, ax = plt.subplots(figsize=(8, 5))
 
     ax.plot(central_losses, label="Centralized", marker="o", linewidth=2)
-    ax.plot(fed_losses,     label="Federated (FedAvg)", marker="s", linewidth=2, linestyle="--")
+    #ax.plot(fed_losses,     label="Federated (FedAvg)", marker="s", linewidth=2, linestyle="--")
+    # Federated curves (multiple)
+    for num_clients, results in fed_results.items():
+        ax.plot(
+            results["losses"],
+            label=f"FL ({num_clients} clients)",
+            linestyle="--",
+            linewidth=2
+        )
 
     ax.set_xlabel("Epoch / Round")
     ax.set_ylabel("Loss")
     ax.set_title("Training Loss: Centralized vs Federated")
     ax.legend()
     ax.grid(True, alpha=0.3)
+    max_rounds = max(len(central_losses), *(len(r["losses"]) for r in fed_results.values()))
+    ax.set_xticks(get_sparse_ticks(max_rounds))
     plt.tight_layout()
     plt.savefig("loss_comparison.png", dpi=150)
     plt.show()
 
 
-def plot_acc_overlay(central_accs, fed_accs):
+def plot_acc_overlay(central_accs, fed_results):
     """
     Overlay validation accuracy curves for centralized vs federated training.
     central_accs: list of per-epoch val accuracies from centralized training
@@ -64,13 +74,22 @@ def plot_acc_overlay(central_accs, fed_accs):
     fig, ax = plt.subplots(figsize=(8, 5))
 
     ax.plot(central_accs, label="Centralized", marker="o", linewidth=2)
-    ax.plot(fed_accs,     label="Federated (FedAvg)", marker="s", linewidth=2, linestyle="--")
+    #ax.plot(fed_accs,     label="Federated (FedAvg)", marker="s", linewidth=2, linestyle="--")
+    for num_clients, results in fed_results.items():
+        ax.plot(
+            results["accs"],
+            label=f"FL ({num_clients} clients)",
+            linestyle="--",
+            linewidth=2
+        )
 
     ax.set_xlabel("Epoch / Round")
     ax.set_ylabel("Validation Accuracy (%)")
     ax.set_title("Validation Accuracy: Centralized vs Federated")
-    ax.legend()
+    ax.legend(loc='lower right')
     ax.grid(True, alpha=0.3)
+    max_rounds = max(len(central_accs), *(len(r["losses"]) for r in fed_results.values()))
+    ax.set_xticks(get_sparse_ticks(max_rounds))
     plt.tight_layout()
     plt.savefig("acc_comparison.png", dpi=150)
     plt.show()
@@ -123,3 +142,23 @@ def plot_cm(cm):
     plt.title("Confusion Matrix")
     plt.savefig("confusion_matrix.png", dpi=150)
     plt.show()
+
+def get_sparse_ticks(n, num_ticks=5):
+    """
+    Returns a list of x-axis ticks to display.
+    Always includes 1 and the last round.
+    n: total number of rounds
+    num_ticks: approx number of ticks to show
+    """
+    if n <= num_ticks:
+        return list(range(1, n+1))
+    else:
+        # Evenly spaced ticks
+        ticks = [1]
+        # generate num_ticks-2 intermediate ticks
+        for t in range(1, num_ticks-1):
+            ticks.append(round(t * (n-1)/(num_ticks-1)) + 1)
+        ticks.append(n)
+        # remove duplicates and sort
+        ticks = sorted(list(set(ticks)))
+        return ticks
