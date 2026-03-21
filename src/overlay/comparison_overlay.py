@@ -33,10 +33,10 @@ mnist_testset = datasets.MNIST(root = './data', train = False, download = True, 
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 model = CNN().to(device)
 
-NUMBER_OF_CLIENTS = [2, 5, 10, 20, 50]
+NUMBER_OF_CLIENTS = 10
 NUMBER_OF_EPOCHS = 3
 NUMBER_OF_ROUNDS = 10000
-DIRICHLET_ALPHA = 10
+DIRICHLET_ALPHA = [0.1, 0.5, 1, 5, 10]
 BATCH_SIZE = 64
 LR = 0.03
 # %%
@@ -61,16 +61,16 @@ central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = NUMBE
 # Now we need to aggregate the results with FedAvg
 fed_results = {}
 
-for num_clients in NUMBER_OF_CLIENTS:
+for dirichlet_alpha in DIRICHLET_ALPHA:
     # Model
     gl_model = CNN().to(device)
     # Data Loader
-    client_training_loaders = create_dirichlet_client_loaders(number_of_clients=num_clients,
+    client_training_loaders = create_dirichlet_client_loaders(number_of_clients=NUMBER_OF_CLIENTS,
                                                               mnist_trainset=full_mnist_trainset,
-                                                              alpha=DIRICHLET_ALPHA)
+                                                              alpha=dirichlet_alpha)
 
     fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUNDS,
-                                                  number_of_clients = num_clients,
+                                                  number_of_clients = NUMBER_OF_CLIENTS,
                                                   epochs = NUMBER_OF_EPOCHS,
                                                   global_model = gl_model,
                                                   client_training_loaders = client_training_loaders,
@@ -79,7 +79,7 @@ for num_clients in NUMBER_OF_CLIENTS:
                                                   lr = 0.05,
                                                   participation_rate = 1,
                                                   convergence = "acc")
-    fed_results[num_clients] = {
+    fed_results[dirichlet_alpha]= {
         "losses": fed_losses,
         "accs": fed_val_accs
     }
