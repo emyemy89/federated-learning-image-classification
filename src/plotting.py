@@ -23,7 +23,7 @@ def plot_acc( val_accuracies):
     #acc plot
     plt.figure()
     plt.plot(epochs, val_accuracies, marker='o', color='orange')
-    plt.title('Validation Accuracy per Epoch')
+    plt.title('Accuracy per Epoch')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy (%)')
     plt.xticks(get_sparse_ticks(len(val_accuracies)))
@@ -42,18 +42,22 @@ def plot_loss_overlay(central_losses, fed_results):
     """
     fig, ax = plt.subplots(figsize=(8, 5))
 
-    ax.plot(central_losses, label="Centralized", marker="o", linewidth=2)
+    ax.plot(central_losses, label="Centralized", marker=".", linewidth=2)
     #ax.plot(fed_losses,     label="Federated (FedAvg)", marker="s", linewidth=2, linestyle="--")
     # Federated curves (multiple)
-    for num_clients, results in fed_results.items():
+    colors = ["orange", "green", "red", "purple", "brown"]
+    for i, (num_clients, results) in enumerate(fed_results.items()):
+        color = colors[i % len(colors)]
         ax.plot(
             results["losses"],
             label=f"FL ({num_clients} clients)",
-            linestyle="--",
-            linewidth=2
+            linestyle="solid",
+            marker=".",
+            color=color,
+            linewidth=1.5
         )
 
-    ax.set_xlabel("Epoch / Round")
+    ax.set_xlabel("Round Number")
     ax.set_ylabel("Loss")
     ax.set_title("Training Loss: Centralized vs Federated")
     ax.legend()
@@ -73,19 +77,23 @@ def plot_acc_overlay(central_accs, fed_results):
     """
     fig, ax = plt.subplots(figsize=(8, 5))
 
-    ax.plot(central_accs, label="Centralized", marker="o", linewidth=2)
+    ax.plot(central_accs, label="Centralized", marker=".", linewidth=2)
     #ax.plot(fed_accs,     label="Federated (FedAvg)", marker="s", linewidth=2, linestyle="--")
-    for num_clients, results in fed_results.items():
+    colors = ["orange", "green", "red", "purple", "brown"]
+    for i,(num_clients, results) in enumerate(fed_results.items()):
+        color = colors[i % len(colors)]
         ax.plot(
             results["accs"],
             label=f"FL ({num_clients} clients)",
-            linestyle="--",
-            linewidth=2
+            linestyle="solid",
+            marker=".",
+            color=color,
+            linewidth=1.5
         )
 
-    ax.set_xlabel("Epoch / Round")
-    ax.set_ylabel("Validation Accuracy (%)")
-    ax.set_title("Validation Accuracy: Centralized vs Federated")
+    ax.set_xlabel("Round Number")
+    ax.set_ylabel("Accuracy (%)")
+    ax.set_title("Accuracy per round: Centralized vs Federated")
     ax.legend(loc='lower right')
     ax.grid(True, alpha=0.3)
     max_rounds = max(len(central_accs), *(len(r["losses"]) for r in fed_results.values()))
