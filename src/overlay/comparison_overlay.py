@@ -66,7 +66,7 @@ for participation_rate in PARTICIPATION_RATE:
     # Model
     gl_model = CNN().to(device)
     # Data Loader
-    client_training_loaders = create_dirichlet_client_loaders(number_of_clients=num_clients,
+    client_training_loaders = create_dirichlet_client_loaders(number_of_clients=NUMBER_OF_CLIENTS,
                                                               mnist_trainset=full_mnist_trainset,
                                                               alpha=DIRICHLET_ALPHA)
 
