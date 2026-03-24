@@ -50,7 +50,7 @@ def plot_loss_overlay(central_losses, fed_results):
         color = colors[i % len(colors)]
         ax.plot(
             results["losses"],
-            label=f"FL ({num_clients} clients)",
+            label=f"FL ({num_clients} participation rate)",
             linestyle="solid",
             marker=".",
             color=color,
@@ -84,7 +84,7 @@ def plot_acc_overlay(central_accs, fed_results):
         color = colors[i % len(colors)]
         ax.plot(
             results["accs"],
-            label=f"FL ({num_clients} clients)",
+            label=f"FL ({num_clients} participation rate)",
             linestyle="solid",
             marker=".",
             color=color,

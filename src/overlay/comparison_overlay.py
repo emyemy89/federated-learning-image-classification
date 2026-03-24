@@ -33,12 +33,13 @@ mnist_testset = datasets.MNIST(root = './data', train = False, download = True, 
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 model = CNN().to(device)
 
-NUMBER_OF_CLIENTS = [2, 5, 10, 20, 50]
+NUMBER_OF_CLIENTS = 10
 NUMBER_OF_EPOCHS = 3
 NUMBER_OF_ROUNDS = 10000
 DIRICHLET_ALPHA = 10
 BATCH_SIZE = 64
 LR = 0.03
+PARTICIPATION_RATE = [0.1, 0.2, 0.5, 0.7, 1]
 # %%
 # Data Loaders
 train_loader = DataLoader(full_mnist_trainset, batch_size = BATCH_SIZE, shuffle = True)
@@ -61,7 +62,7 @@ central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = NUMBE
 # Now we need to aggregate the results with FedAvg
 fed_results = {}
 
-for num_clients in NUMBER_OF_CLIENTS:
+for participation_rate in PARTICIPATION_RATE:
     # Model
     gl_model = CNN().to(device)
     # Data Loader
@@ -70,16 +71,16 @@ for num_clients in NUMBER_OF_CLIENTS:
                                                               alpha=DIRICHLET_ALPHA)
 
     fed_losses, fed_val_accs        =       run_fl(number_of_rounds = NUMBER_OF_ROUNDS,
-                                                  number_of_clients = num_clients,
+                                                  number_of_clients = NUMBER_OF_CLIENTS,
                                                   epochs = NUMBER_OF_EPOCHS,
                                                   global_model = gl_model,
                                                   client_training_loaders = client_training_loaders,
                                                   val_loader = val_loader,
                                                   test_loader = test_loader,
                                                   lr = 0.05,
-                                                  participation_rate = 1,
+                                                  participation_rate = participation_rate,
                                                   convergence = "acc")
-    fed_results[num_clients] = {
+    fed_results[participation_rate] = {
         "losses": fed_losses,
         "accs": fed_val_accs
     }
