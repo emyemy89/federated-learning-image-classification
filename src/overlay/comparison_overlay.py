@@ -30,7 +30,11 @@ full_mnist_trainset = datasets.MNIST(root = './data', train = True, download = T
 mnist_testset = datasets.MNIST(root = './data', train = False, download = True, transform = transform)
 # %%
 # the model: CNN or MLP
-device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else
+    "mps" if torch.backends.mps.is_available() else
+    "cpu"
+)
 model = CNN().to(device)
 
 NUMBER_OF_CLIENTS = [2, 5, 10, 20, 50]

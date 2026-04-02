@@ -8,7 +8,11 @@ import torch.optim as optim
 from sklearn.metrics import confusion_matrix, f1_score
 
 from src.plotting import plot_loss, plot_acc, plot_cm
-device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else
+    "mps" if torch.backends.mps.is_available() else
+    "cpu"
+)
 
 # function for local training in FL settings
 def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr = 0.1, convergence = None):
