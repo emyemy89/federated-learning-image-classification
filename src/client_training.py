@@ -18,7 +18,7 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
     """
     Locally trains ``model`` on ``train_loader`` (cross-entropy, SGD); validates when ``val_loader`` is provided.
     Parameters — model: ``nn.Module``. train_loader: training ``DataLoader``. val_loader: optional ``DataLoader``.
-    number_of_epochs: ``int``. lr: ``float`` SGD step size. convergence: ``"f1"``, ``"acc"``, or ``None`` for early-stop.
+                 number_of_epochs: ``int``. lr: ``float`` SGD step size. convergence: ``"f1"``, ``"acc"``, or ``None`` for early-stop.
     Returns: ``tuple`` — (``state_dict``, per-epoch training losses ``list[float]``, per-epoch val accuracies ``list[float]``).
     """
     criterion = nn.CrossEntropyLoss()
@@ -68,7 +68,7 @@ def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy, convergence
     """
     Evaluates ``global_model`` on ``dataloader``; computes accuracy, macro-F1, and optional convergence signal.
     Parameters — dataloader: ``DataLoader``. global_model: ``nn.Module``. prev_f1, prev_accuracy: prior metrics ``float``.
-    convergence: ``"f1"``, ``"acc"``, or ``None`` (gates ``small_change`` thresholds).
+                 convergence: ``"f1"``, ``"acc"``, or ``None`` (gates ``small_change`` thresholds).
     Returns: ``tuple`` — (accuracy ``float`` %, ``small_change`` ``bool``, ``current_f1`` ``float``, ``all_true`` ``list``, ``all_predicted`` ``list``).
     """
     global_model.eval()
@@ -105,7 +105,7 @@ def aggregate(number_of_samples, client_state_dictionary, global_model):
     """
     Federated averaging: sample-weighted mean of client ``state_dict`` entries written into ``global_model``.
     Parameters — number_of_samples: ``list[int]`` per-client sample counts. client_state_dictionary: ``list`` of ``dict`` (tensor weights).
-    global_model: ``nn.Module`` updated in-place via ``load_state_dict``.
+                 global_model: ``nn.Module`` updated in-place via ``load_state_dict``.
     Returns: ``global_model`` ``nn.Module``.
     """
     global_state_dictionary = {} # here averaged weights will be stored
@@ -126,7 +126,7 @@ def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, 
     """
     Centralized training via ``train_local``; prints timing and test accuracy; plots loss and validation accuracy curves.
     Parameters — number_of_epochs: ``int``. train_loader, val_loader, test_loader: ``DataLoader``. model: ``nn.Module``. lr: ``float``.
-    convergence: ``"f1"``, ``"acc"``, or ``None``.
+                 convergence: ``"f1"``, ``"acc"``, or ``None``.
     Returns: ``tuple`` — (training losses ``list[float]``, validation accuracies ``list[float]``).
     """
     start_time = time.time()
@@ -147,7 +147,7 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
     """
     Federated rounds: random client subset, local ``train_local``, ``aggregate`` (FedAvg), validate, optional early stop; plots metrics.
     Parameters — number_of_rounds, number_of_clients, epochs: ``int``. global_model: ``nn.Module``. client_training_loaders: ``list[DataLoader]``.
-    val_loader, test_loader: ``DataLoader``. lr: ``float``. participation_rate: ``float``. convergence: ``"f1"``, ``"acc"``, or ``None``.
+                 val_loader, test_loader: ``DataLoader``. lr: ``float``. participation_rate: ``float``. convergence: ``"f1"``, ``"acc"``, or ``None``.
     Returns: ``tuple`` — (per-round mean client losses ``list[float]``, per-round validation accuracies ``list[float]``).
     """
     global_losses = []  # avg client loss per round
