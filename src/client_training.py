@@ -16,6 +16,12 @@ device = torch.device(
 
 # function for local training in FL settings
 def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr = 0.1, convergence = None):
+    """
+    Locally trains ``model`` on ``train_loader`` (cross-entropy, SGD); validates when ``val_loader`` is provided.
+    Parameters — model: ``nn.Module``. train_loader: training ``DataLoader``. val_loader: optional ``DataLoader``.
+    number_of_epochs: ``int``. lr: ``float`` SGD step size. convergence: ``"f1"``, ``"acc"``, or ``None`` for early-stop.
+    Returns: ``tuple`` — (``state_dict``, per-epoch training losses ``list[float]``, per-epoch val accuracies ``list[float]``).
+    """
     criterion = nn.CrossEntropyLoss()
     optimiser = optim.SGD(model.parameters(), lr = lr)
     model.train()
@@ -61,6 +67,12 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
 
 # function for calculating accuracy
 def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy, convergence):
+    """
+    Evaluates ``global_model`` on ``dataloader``; computes accuracy, macro-F1, and optional convergence signal.
+    Parameters — dataloader: ``DataLoader``. global_model: ``nn.Module``. prev_f1, prev_accuracy: prior metrics ``float``.
+    convergence: ``"f1"``, ``"acc"``, or ``None`` (gates ``small_change`` thresholds).
+    Returns: ``tuple`` — (accuracy ``float`` %, ``small_change`` ``bool``, ``current_f1`` ``float``, ``all_true`` ``list``, ``all_predicted`` ``list``).
+    """
     global_model.eval()
     correct = 0
     total = 0
@@ -92,6 +104,12 @@ def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy, convergence
 
 # function to aggregate weights in FL global model computation at each round
 def aggregate(number_of_samples, client_state_dictionary, global_model):
+    """
+    Federated averaging: sample-weighted mean of client ``state_dict`` entries written into ``global_model``.
+    Parameters — number_of_samples: ``list[int]`` per-client sample counts. client_state_dictionary: ``list`` of ``dict`` (tensor weights).
+    global_model: ``nn.Module`` updated in-place via ``load_state_dict``.
+    Returns: ``global_model`` ``nn.Module``.
+    """
     global_state_dictionary = {} # here averaged weights will be stored
     total_samples = sum(number_of_samples)
     for key in client_state_dictionary[0].keys(): # here client_state_dictionary[0].keys() is ok because all clients have the same keys:
@@ -108,6 +126,12 @@ def aggregate(number_of_samples, client_state_dictionary, global_model):
 
 # helper function for running ML algorithms
 def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, model, lr, convergence):
+    """
+    Centralized training via ``train_local``; prints timing and test accuracy; plots loss and validation accuracy curves.
+    Parameters — number_of_epochs: ``int``. train_loader, val_loader, test_loader: ``DataLoader``. model: ``nn.Module``. lr: ``float``.
+    convergence: ``"f1"``, ``"acc"``, or ``None``.
+    Returns: ``tuple`` — (training losses ``list[float]``, validation accuracies ``list[float]``).
+    """
     start_time = time.time()
     model = model.to(device)
     # do training
@@ -123,6 +147,12 @@ def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, 
 
 # helper function for running FL algorithms
 def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_training_loaders, val_loader, test_loader, lr, participation_rate, convergence):
+    """
+    Federated rounds: random client subset, local ``train_local``, ``aggregate`` (FedAvg), validate, optional early stop; plots metrics.
+    Parameters — number_of_rounds, number_of_clients, epochs: ``int``. global_model: ``nn.Module``. client_training_loaders: ``list[DataLoader]``.
+    val_loader, test_loader: ``DataLoader``. lr: ``float``. participation_rate: ``float``. convergence: ``"f1"``, ``"acc"``, or ``None``.
+    Returns: ``tuple`` — (per-round mean client losses ``list[float]``, per-round validation accuracies ``list[float]``).
+    """
     global_losses = []  # avg client loss per round
     global_val_accuracies = []  # global model val accuracy per round
     start_time = time.time()
@@ -181,6 +211,11 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
 
 # Generates a confusion matrix
 def generate_confusion_matrix(true, predicted):
+    """
+    Computes a confusion matrix from label sequences and displays it via ``plot_cm``.
+    Parameters — true: ground-truth class indices (sequence). predicted: predicted class indices (sequence, aligned with ``true``).
+    Returns: ``numpy.ndarray`` from ``sklearn.metrics.confusion_matrix``.
+    """
     cm = confusion_matrix(true, predicted)
     plot_cm(cm)
     return cm
