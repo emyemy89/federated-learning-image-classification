@@ -25,9 +25,7 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
     optimiser = optim.SGD(model.parameters(), lr = lr)
     model.train()
     losses, val_accuracies = [], []
-    prev_f1 = 0
-    prev_accuracy = 0
-    num_improve_rounds = 0
+    prev_f1, prev_accuracy, num_improve_rounds = 0, 0, 0
     patience = 4
     model.to(device)
     for epoch in range (number_of_epochs):
@@ -72,8 +70,7 @@ def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy, convergence
     Returns: ``tuple`` — (accuracy ``float`` %, ``small_change`` ``bool``, ``current_f1`` ``float``, ``all_true`` ``list``, ``all_predicted`` ``list``).
     """
     global_model.eval()
-    correct = 0
-    total = 0
+    correct, total = 0, 0
     #stop = False
     small_change = False
     all_true = []
@@ -92,7 +89,6 @@ def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy, convergence
             all_predicted.extend(predicted.cpu().numpy())
     accuracy = (correct / total)*100
     current_f1 = f1_score(all_true, all_predicted, average='macro')
-    # print(f"F1 difference thingy is {current_f1- prev_f1}\n")
     if (convergence == "f1" and abs(current_f1 - prev_f1) < 0.0001) or \
    (convergence == "acc" and abs(accuracy - prev_accuracy) < 0.05):
         small_change = True
@@ -153,9 +149,7 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
     global_losses = []  # avg client loss per round
     global_val_accuracies = []  # global model val accuracy per round
     start_time = time.time()
-    prev_f1 = 0
-    prev_accuracy = 0
-    num_improve_rounds = 0
+    prev_f1, prev_accuracy, num_improve_rounds = 0, 0, 0
     patience = 4
     for round in range(number_of_rounds):
         print("---------------------------------")
@@ -178,7 +172,6 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
         # aggregate
         round_loss = sum(round_losses) / len(round_losses)
         global_losses.append(round_loss)  # average the loss for the whole round
-
         global_model = aggregate(number_of_samples, client_state_dictionary, global_model)
 
         print("Average Loss: " + str(round_loss))
