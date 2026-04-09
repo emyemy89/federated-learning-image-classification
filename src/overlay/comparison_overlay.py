@@ -6,11 +6,11 @@ sys.path.append(os.path.abspath("../.."))
 print(sys.executable)
 
 from torchvision import datasets, transforms
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 
-from src.client_training import run_fl, run_centralised_ml
-from src.data_loading import create_dirichlet_client_loaders, debug_non_iid_split
-from src.model_implementation import CNN, MLP
+from src.utils_client_training import run_fl, run_centralised_ml
+from src.data_loading import create_dirichlet_client_loaders
+from models.model_implementation import CNN
 from src.plotting import (
     plot_loss_overlay,
     plot_acc_overlay,
