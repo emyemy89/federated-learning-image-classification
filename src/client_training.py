@@ -14,7 +14,6 @@ device = torch.device(
     "cpu"
 )
 
-# function for local training in FL settings
 def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr = 0.1, convergence = None):
     """
     Locally trains ``model`` on ``train_loader`` (cross-entropy, SGD); validates when ``val_loader`` is provided.
@@ -65,7 +64,6 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
     return model.state_dict(), losses, val_accuracies # return a dictionary of model parameters
 
 
-# function for calculating accuracy
 def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy, convergence):
     """
     Evaluates ``global_model`` on ``dataloader``; computes accuracy, macro-F1, and optional convergence signal.
@@ -102,7 +100,7 @@ def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy, convergence
         print(f'Accuracy {accuracy}%\n')
     return accuracy, small_change, current_f1, all_true, all_predicted
 
-# function to aggregate weights in FL global model computation at each round
+
 def aggregate(number_of_samples, client_state_dictionary, global_model):
     """
     Federated averaging: sample-weighted mean of client ``state_dict`` entries written into ``global_model``.
@@ -124,7 +122,6 @@ def aggregate(number_of_samples, client_state_dictionary, global_model):
     return global_model
 
 
-# helper function for running ML algorithms
 def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, model, lr, convergence):
     """
     Centralized training via ``train_local``; prints timing and test accuracy; plots loss and validation accuracy curves.
@@ -145,7 +142,7 @@ def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, 
     plot_acc( val_accuracies)
     return losses, val_accuracies
 
-# helper function for running FL algorithms
+
 def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_training_loaders, val_loader, test_loader, lr, participation_rate, convergence):
     """
     Federated rounds: random client subset, local ``train_local``, ``aggregate`` (FedAvg), validate, optional early stop; plots metrics.
@@ -209,7 +206,6 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
     return global_losses, global_val_accuracies
 
 
-# Generates a confusion matrix
 def generate_confusion_matrix(true, predicted):
     """
     Computes a confusion matrix from label sequences and displays it via ``plot_cm``.
