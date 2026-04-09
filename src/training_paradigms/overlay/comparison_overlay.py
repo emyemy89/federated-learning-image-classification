@@ -8,10 +8,10 @@ print(sys.executable)
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 
-from src.utils_client_training import run_fl, run_centralised_ml
-from src.data_loading import create_dirichlet_client_loaders
+from training_paradigms.lib.utils_client_training import run_fl, run_centralised_ml
+from training_paradigms.lib.data_loading import create_dirichlet_client_loaders
 from models.model_implementation import CNN
-from src.plotting import (
+from training_paradigms.lib.plotting import (
     plot_loss_overlay,
     plot_acc_overlay,
     plot_client_label_distribution,

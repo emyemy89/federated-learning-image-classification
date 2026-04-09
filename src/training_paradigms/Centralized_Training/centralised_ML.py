@@ -7,7 +7,7 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 
-from src.utils_client_training import run_centralised_ml
+from training_paradigms.lib.utils_client_training import run_centralised_ml
 from models.model_implementation import CNN
 
 # %%
