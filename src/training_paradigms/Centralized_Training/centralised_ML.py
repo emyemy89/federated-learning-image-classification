@@ -1,7 +1,7 @@
 # %%
 import sys
 import os
-sys.path.append(os.path.abspath("../.."))
+sys.path.append(os.path.abspath("../../.."))
 
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader

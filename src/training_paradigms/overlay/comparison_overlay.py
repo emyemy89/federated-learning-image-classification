@@ -2,7 +2,7 @@
 import sys
 import os
 import torch
-sys.path.append(os.path.abspath("../.."))
+sys.path.append(os.path.abspath("../../.."))
 print(sys.executable)
 
 from torchvision import datasets, transforms

@@ -10,8 +10,8 @@
 .DS_Store
 
 # Generated plots
-src/Federated_Learning/accuracy.png
-src/Federated_Learning/loss.png
+src/training_paradigms/Federated_Learning/accuracy.png
+src/training_paradigms/Federated_Learning/loss.png
 results/*.png
 accuracy.png
 loss.png
