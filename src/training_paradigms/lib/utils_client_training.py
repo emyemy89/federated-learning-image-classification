@@ -1,5 +1,4 @@
 import random
-from collections import Counter
 import copy
 import torch
 import time
@@ -7,7 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 from sklearn.metrics import confusion_matrix, f1_score
 
-from src.plotting import plot_loss, plot_acc, plot_cm
+from training_paradigms.lib.plotting import plot_loss, plot_acc, plot_cm
 device = torch.device(
     "cuda" if torch.cuda.is_available() else
     "mps" if torch.backends.mps.is_available() else

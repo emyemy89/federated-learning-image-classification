@@ -8,8 +8,8 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split # use for data distribution for clients
 
-from utils_client_training import run_fl
-from data_loading import create_dirichlet_client_loaders, debug_non_iid_split
+from training_paradigms.lib.utils_client_training import run_fl
+from training_paradigms.lib.data_loading import create_dirichlet_client_loaders, debug_non_iid_split
 from models.model_implementation import CNN
 
 # %%

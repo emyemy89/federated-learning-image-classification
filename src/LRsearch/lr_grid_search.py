@@ -9,8 +9,8 @@ from torch.utils.data import DataLoader, random_split
 sys.path.append(os.path.abspath(".."))
 sys.path.append(os.path.abspath("../.."))
 
-from src.utils_client_training import run_fl, run_centralised_ml
-from src.data_loading import create_dirichlet_client_loaders
+from training_paradigms.lib.utils_client_training import run_fl, run_centralised_ml
+from training_paradigms.lib.data_loading import create_dirichlet_client_loaders
 from models.model_implementation import CNN
 
 

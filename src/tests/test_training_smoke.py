@@ -5,8 +5,8 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, Subset, TensorDataset
 
 from models.model_implementation import CNN, MLP
-from src.utils_client_training import train_local, run_fl, evaluate_model
-from src.data_loading import create_dirichlet_client_loaders
+from training_paradigms.lib.utils_client_training import train_local, run_fl, evaluate_model
+from training_paradigms.lib.data_loading import create_dirichlet_client_loaders
 
 
 class TrainingSmokeTests(unittest.TestCase):
