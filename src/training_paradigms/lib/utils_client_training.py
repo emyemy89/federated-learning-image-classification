@@ -89,7 +89,7 @@ def evaluate_model(dataloader, global_model, prev_f1, prev_accuracy, convergence
     accuracy = (correct / total)*100
     current_f1 = f1_score(all_true, all_predicted, average='macro')
     if (convergence == "f1" and abs(current_f1 - prev_f1) < 0.0001) or \
-   (convergence == "acc" and abs(accuracy - prev_accuracy) < 0.05):
+   (convergence == "acc" and abs(accuracy - prev_accuracy) < 0.9):
         small_change = True
         #generate_confusion_matrix(all_true, all_predicted)
         print(f'Accuracy {accuracy}%\n')
@@ -117,7 +117,7 @@ def aggregate(number_of_samples, client_state_dictionary, global_model):
     return global_model
 
 
-def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, model, lr, convergence):
+def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, model, lr, convergence, plot_dir=None):
     """
     Centralized training via ``train_local``; prints timing and test accuracy; plots loss and validation accuracy curves.
     Parameters — number_of_epochs: ``int``. train_loader, val_loader, test_loader: ``DataLoader``. model: ``nn.Module``. lr: ``float``.
@@ -133,12 +133,12 @@ def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, 
     test_accuracy, _, _, _, _ = evaluate_model(test_loader, model, 0, 0, None)
     print(f"Total training time: {end_time-start_time:.2f} seconds")
     print(f"No convergence, but test Accuracy: {test_accuracy:.2f}%")
-    plot_loss( losses)
-    plot_acc( val_accuracies)
+    plot_loss(losses, output_dir=plot_dir)
+    plot_acc(val_accuracies, output_dir=plot_dir)
     return losses, val_accuracies
 
 
-def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_training_loaders, val_loader, test_loader, lr, participation_rate, convergence):
+def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_training_loaders, val_loader, test_loader, lr, participation_rate, convergence, plot_dir=None):
     """
     Federated rounds: random client subset, local ``train_local``, ``aggregate`` (FedAvg), validate, optional early stop; plots metrics.
     Parameters — number_of_rounds, number_of_clients, epochs: ``int``. global_model: ``nn.Module``. client_training_loaders: ``list[DataLoader]``.
@@ -193,18 +193,18 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
     end_time = time.time()
     print(f"Total training time: {end_time-start_time:.2f} seconds")
 
-    plot_loss(global_losses)
-    plot_acc(global_val_accuracies)
+    plot_loss(global_losses, output_dir=plot_dir)
+    plot_acc(global_val_accuracies, output_dir=plot_dir)
     return global_losses, global_val_accuracies
 
 
-def generate_confusion_matrix(true, predicted):
+def generate_confusion_matrix(true, predicted, output_dir=None):
     """
     Computes a confusion matrix from label sequences and displays it via ``plot_cm``.
     Parameters — true: ground-truth class indices (sequence). predicted: predicted class indices (sequence, aligned with ``true``).
     Returns: ``numpy.ndarray`` from ``sklearn.metrics.confusion_matrix``.
     """
     cm = confusion_matrix(true, predicted)
-    plot_cm(cm)
+    plot_cm(cm, output_dir=output_dir)
     return cm
 

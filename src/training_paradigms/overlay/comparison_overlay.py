@@ -17,6 +17,8 @@ from training_paradigms.lib.plotting import (
     plot_client_label_distribution,
 )
 
+PLOT_DIR = os.path.join(os.path.dirname(__file__), "plots")
+
 
 # %%
 # Data Loading
@@ -37,7 +39,7 @@ device = torch.device(
 )
 model = CNN().to(device)
 
-NUMBER_OF_CLIENTS = [2, 5, 10, 20, 50]
+NUMBER_OF_CLIENTS = [2, 5]
 NUMBER_OF_EPOCHS = 3
 NUMBER_OF_ROUNDS = 10000
 DIRICHLET_ALPHA = 10
@@ -60,7 +62,8 @@ central_losses, central_val_accs  =  run_centralised_ml(number_of_epochs = NUMBE
                                                       test_loader = test_loader,
                                                       model = model,
                                                       lr = 0.01,
-                                                      convergence= "acc")
+                                                      convergence= "acc",
+                                                      plot_dir = PLOT_DIR)
 
 # Now we need to aggregate the results with FedAvg
 fed_results = {}
@@ -82,7 +85,8 @@ for num_clients in NUMBER_OF_CLIENTS:
                                                   test_loader = test_loader,
                                                   lr = 0.05,
                                                   participation_rate = 1,
-                                                  convergence = "acc")
+                                                  convergence = "acc",
+                                                  plot_dir = PLOT_DIR)
     fed_results[num_clients] = {
         "losses": fed_losses,
         "accs": fed_val_accs
@@ -90,6 +94,6 @@ for num_clients in NUMBER_OF_CLIENTS:
 
 
 # PLOTS
-plot_loss_overlay(central_losses, fed_results) # loss comparison between ML and FL
-plot_acc_overlay(central_val_accs, fed_results) # accuracy comparison between ML and FL
-plot_client_label_distribution(client_training_loaders) # create a heatmap-style overview per client
+plot_loss_overlay(central_losses, fed_results, output_dir=PLOT_DIR) # loss comparison between ML and FL
+plot_acc_overlay(central_val_accs, fed_results, output_dir=PLOT_DIR) # accuracy comparison between ML and FL
+plot_client_label_distribution(client_training_loaders, output_dir=PLOT_DIR) # create a heatmap-style overview per client

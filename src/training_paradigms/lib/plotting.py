@@ -1,8 +1,22 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from pathlib import Path
 
-def plot_loss( losses):
+
+def _save_plot(filename, output_dir=None, dpi=None):
+    if output_dir is not None:
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+        target = output_path / filename
+    else:
+        target = Path(filename)
+    if dpi is not None:
+        plt.savefig(target, dpi=dpi)
+    else:
+        plt.savefig(target)
+
+def plot_loss(losses, output_dir=None):
     epochs = range(1, len(losses) + 1)
 
 #loss plot
@@ -13,12 +27,12 @@ def plot_loss( losses):
     plt.ylabel('Loss')
     plt.xticks(get_sparse_ticks(len(losses)))
     plt.tight_layout()
-    plt.savefig('loss.png')
+    _save_plot("loss.png", output_dir=output_dir)
     plt.show()
     
 
 
-def plot_acc( val_accuracies):
+def plot_acc(val_accuracies, output_dir=None):
     epochs = range(1, len(val_accuracies) + 1)
     #acc plot
     plt.figure()
@@ -28,13 +42,13 @@ def plot_acc( val_accuracies):
     plt.ylabel('Accuracy (%)')
     plt.xticks(get_sparse_ticks(len(val_accuracies)))
     plt.tight_layout()
-    plt.savefig('accuracy.png')
+    _save_plot("accuracy.png", output_dir=output_dir)
     plt.show()
 
 
 
 
-def plot_loss_overlay(central_losses, fed_results):
+def plot_loss_overlay(central_losses, fed_results, output_dir=None):
     """
     Overlay loss curves for centralized vs federated training.
     central_losses: list of per-epoch losses from centralized training
@@ -65,11 +79,11 @@ def plot_loss_overlay(central_losses, fed_results):
     max_rounds = max(len(central_losses), *(len(r["losses"]) for r in fed_results.values()))
     ax.set_xticks(get_sparse_ticks(max_rounds))
     plt.tight_layout()
-    plt.savefig("loss_comparison.png", dpi=150)
+    _save_plot("loss_comparison.png", output_dir=output_dir, dpi=150)
     plt.show()
 
 
-def plot_acc_overlay(central_accs, fed_results):
+def plot_acc_overlay(central_accs, fed_results, output_dir=None):
     """
     Overlay validation accuracy curves for centralized vs federated training.
     central_accs: list of per-epoch val accuracies from centralized training
@@ -99,11 +113,11 @@ def plot_acc_overlay(central_accs, fed_results):
     max_rounds = max(len(central_accs), *(len(r["losses"]) for r in fed_results.values()))
     ax.set_xticks(get_sparse_ticks(max_rounds))
     plt.tight_layout()
-    plt.savefig("acc_comparison.png", dpi=150)
+    _save_plot("acc_comparison.png", output_dir=output_dir, dpi=150)
     plt.show()
 
 
-def plot_client_label_distribution(client_training_loaders):
+def plot_client_label_distribution(client_training_loaders, output_dir=None):
     """
     Visualize how many samples of each label each client has
     using a heatmap (clients x classes).
@@ -133,10 +147,10 @@ def plot_client_label_distribution(client_training_loaders):
     cbar.set_label("Number of samples")
 
     plt.tight_layout()
-    plt.savefig("client_label_distribution.png", dpi=150)
+    _save_plot("client_label_distribution.png", output_dir=output_dir, dpi=150)
     plt.show()
 
-def plot_cm(cm):
+def plot_cm(cm, output_dir=None):
     plt.figure()
     sns.heatmap(
         cm,
@@ -148,7 +162,7 @@ def plot_cm(cm):
     plt.xlabel("Predicted")
     plt.ylabel("True")
     plt.title("Confusion Matrix")
-    plt.savefig("confusion_matrix.png", dpi=150)
+    _save_plot("confusion_matrix.png", output_dir=output_dir, dpi=150)
     plt.show()
 
 def get_sparse_ticks(n, num_ticks=5):

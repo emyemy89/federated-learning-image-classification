@@ -10,6 +10,8 @@ from torch.utils.data import random_split
 from training_paradigms.lib.utils_client_training import run_centralised_ml
 from models.model_implementation import CNN
 
+PLOT_DIR = os.path.join(os.path.dirname(__file__), "plots")
+
 # %%
 # load the dataset
 # now each image mnist_trainset[i][0] is a tensor of shape [1, 28, 28] (1 channel, 28×28 pixels)
@@ -35,4 +37,5 @@ run_centralised_ml(number_of_epochs = 3,
                    train_loader = train_loader,
                    val_loader = val_loader,
                    test_loader = test_loader,
-                   model = model)
+                   model = model,
+                   plot_dir = PLOT_DIR)

@@ -12,6 +12,8 @@ from training_paradigms.lib.utils_client_training import run_fl
 from training_paradigms.lib.data_loading import create_dirichlet_client_loaders, debug_non_iid_split
 from models.model_implementation import CNN
 
+PLOT_DIR = os.path.join(os.path.dirname(__file__), "plots")
+
 # %%
 # Data Loading
 transform = transforms.ToTensor()
@@ -47,4 +49,5 @@ run_fl(number_of_rounds = 3,
        global_model = global_model,
        client_training_loaders = client_training_loaders,
        val_loader = val_loader,
-       test_loader = test_loader)
+       test_loader = test_loader,
+       plot_dir = PLOT_DIR)
