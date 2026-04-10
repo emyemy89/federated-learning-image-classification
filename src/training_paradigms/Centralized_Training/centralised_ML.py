@@ -1,14 +1,16 @@
 # %%
 import sys
 import os
-sys.path.append(os.path.abspath("../.."))
+sys.path.append(os.path.abspath("../../.."))
 
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 
-from src.client_training import run_centralised_ml
-from src.model_implementation import CNN
+from training_paradigms.lib.utils_client_training import run_centralised_ml
+from models.model_implementation import CNN
+
+PLOT_DIR = os.path.join(os.path.dirname(__file__), "plots")
 
 # %%
 # load the dataset
@@ -35,4 +37,5 @@ run_centralised_ml(number_of_epochs = 3,
                    train_loader = train_loader,
                    val_loader = val_loader,
                    test_loader = test_loader,
-                   model = model)
+                   model = model,
+                   plot_dir = PLOT_DIR)

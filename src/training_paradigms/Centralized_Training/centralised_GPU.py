@@ -1,19 +1,15 @@
 # %%
 import torch
 from torchvision import datasets, transforms
-import torch.nn as nn
-import torch.optim as optim
 from torch.utils.data import DataLoader
-
-import matplotlib.pyplot as plt
 
 import sys
 import os
-sys.path.append(os.path.abspath("../.."))
+sys.path.append(os.path.abspath("../../.."))
 
 from trainingGPU import train_model
 from testingGPU import model_testing
-from src.model_implementation import CNN
+from models.model_implementation import CNN
 # %%
 # We will need to convert image to tensors
 # here we define a transform
