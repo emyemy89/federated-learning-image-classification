@@ -13,5 +13,3 @@
 src/training_paradigms/Federated_Learning/plots/accuracy.png
 src/training_paradigms/Federated_Learning/plots/loss.png
 results/*.png
-accuracy.png
-loss.png
