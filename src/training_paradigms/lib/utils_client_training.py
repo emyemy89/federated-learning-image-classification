@@ -13,7 +13,7 @@ device = torch.device(
     "cpu"
 )
 
-def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr = 0.1, convergence = None):
+def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr = 0.1, convergence = None, plot_dir=None):
     """
     Locally trains ``model`` on ``train_loader`` (cross-entropy, SGD); validates when ``val_loader`` is provided.
     Parameters — model: ``nn.Module``. train_loader: training ``DataLoader``. val_loader: optional ``DataLoader``.
@@ -52,7 +52,7 @@ def train_local(model, train_loader, val_loader = None, number_of_epochs = 1, lr
                 num_improve_rounds = 0
             if num_improve_rounds >= patience:
                 print(f"Convergence reached at FL round {epoch + 1}. Stopping training.")
-                generate_confusion_matrix(all_true, all_predicted)
+                generate_confusion_matrix(all_true, all_predicted, output_dir=plot_dir)
                 break
             val_accuracies.append(val_accuracy)
             print(f"Epoch {epoch+1}/{number_of_epochs}, Loss: {avg_loss:.4f}, Val Acc: {val_accuracy:.4f}")
@@ -127,7 +127,7 @@ def run_centralised_ml(number_of_epochs, train_loader, val_loader, test_loader, 
     start_time = time.time()
     model = model.to(device)
     # do training
-    _, losses, val_accuracies = train_local( model, train_loader, val_loader, number_of_epochs, lr, convergence)
+    _, losses, val_accuracies = train_local(model, train_loader, val_loader, number_of_epochs, lr, convergence, plot_dir=plot_dir)
     end_time = time.time()
     # if no convergence
     test_accuracy, _, _, _, _ = evaluate_model(test_loader, model, 0, 0, None)
@@ -164,7 +164,7 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
             print(f"Client{client + 1}:")
             local_model = copy.deepcopy(global_model).to(device)  # copy global model locally
             weights, losses, _ = train_local(model=local_model, train_loader=client_training_loaders[client],
-                                             number_of_epochs=epochs, lr=lr, convergence = convergence)  # train it
+                                             number_of_epochs=epochs, lr=lr, convergence = convergence, plot_dir=plot_dir)  # train it
             client_state_dictionary.append(weights)  # store the weights
             number_of_samples.append(len(client_training_loaders[client].dataset))  # store number of samples
             round_losses.append(sum(losses) / len(losses))  # avg over epochs for this client
@@ -182,7 +182,7 @@ def run_fl(number_of_rounds, number_of_clients, epochs, global_model, client_tra
             num_improve_rounds = 0
         if num_improve_rounds >= patience:
             print(f"Convergence reached at FL round {round + 1}. Stopping training.")
-            generate_confusion_matrix(all_true, all_predicted)  # optional move here
+            generate_confusion_matrix(all_true, all_predicted, output_dir=plot_dir)  # optional move here
             break
         prev_f1 = current_f1
         prev_accuracy = round_val_accuracy
